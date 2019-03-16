@@ -23,3 +23,9 @@ class resnet50_pretrain(nn.Module):
 
         return x        
 
+if __name__ == '__main__':
+    model = resnet50_pretrain()
+
+    print("MODEL:")
+    for module in model.children():
+        print(module)

@@ -6,7 +6,9 @@ LiverMask_*
 MaskedImage_*
 **/fibrosis.mat
 **/log
-**/_pycache_
+__pycache__
 *.csv
 *.xlsx
 *.db
+**.DS_Store
+Python/proxy.txt

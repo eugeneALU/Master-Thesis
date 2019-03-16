@@ -113,14 +113,14 @@ class ResNet(nn.Module):
 
         return x    
     
-def resnet50(**kwargs):
+def resnet50_onechannel(**kwargs):
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     
     return model
 
 
 if __name__ == '__main__':
-    model = resnet50()
+    model = resnet50_onechannel()
 
     print("MODEL:")
     for module in model.children():

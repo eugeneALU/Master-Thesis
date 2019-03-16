@@ -2,7 +2,7 @@ import os
 import torch
 import torch.optim
 from dataset import MRIDataset
-from model import resnet50
+from Resnet_onechannel import resnet50_onechannel
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torchvision import transforms
 from tensorboardX import SummaryWriter
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     dataset_test = MRIDataset(path_to_testdata, path_to_testlabel, mode='R34', transform=Transform)
     dataloader_test = DataLoader(dataset_test, Batch_size_test, shuffle=True, num_workers=0, drop_last=True)
 
-    resnet = resnet50()
+    resnet = resnet50_onechannel()
     # resnet = resnet.cuda()
     resnet.train(mode=True)
     optimizer = torch.optim.Adam(resnet.parameters(), lr=1e-3)
@@ -52,12 +52,10 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
             
-        #if step % 10 == 0:
-        #     print('epoch: {} step: {} loss: {}' .format(epoch, step, loss.item()))
-
+            if step % 10 == 0:
+                print('epoch: {} step: {} loss: {}' .format(epoch, step, loss.item()))
 
             if step % 20 == 0:
-                print('epoch: {} step: {} loss: {}' .format(epoch, step, loss.item()))
                 writer.add_scalar('train/loss', loss.item(), step)
                 resnet.eval()
 
@@ -79,5 +77,5 @@ if __name__ == '__main__':
                 resnet.train(mode=True)
             step += 1
         epoch += 1
-        # torch.save(resnet.state_dict(), os.path.join(path_to_logs_dir, 'checkpoint.pth'))
+        torch.save(resnet.state_dict(), os.path.join(path_to_logs_dir, 'checkpoint.pth'))
     torch.save(resnet.state_dict(), os.path.join(path_to_logs_dir, 'parameter.pth'))

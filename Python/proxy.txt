@@ -1,1 +1,0 @@
-set https_proxy=https://yiclu754@student.liu.se:ivirebus@proxy.hu.liu.se:9999
