@@ -1,0 +1,25 @@
+function readSegTable(Table)
+
+
+fid = fopen(Table);
+    [A,COUNT] = fscanf(fid,'%c');
+    fclose(fid);
+
+    
+    s = sprintf('\n');
+    
+TotalLine = getvalue('Slice	WM	GM	CSF	NON','Sum',s,A,'text');
+
+
+WM = str2num(TotalLine(1:3))
+GM = str2num(TotalLine(5:7))
+CSF = str2num(TotalLine(9:11))
+
+%whiteSpaceIDX = strfind(TotalLine,' ') % find all white space 
+
+%StartEnds = find(diff(whiteSpaceIDX)>1)
+
+%TotalLine(StartEnds(1)+1:StartEnds(2)-1) 
+
+%NonWhite = whiteSpaceIDX();
+

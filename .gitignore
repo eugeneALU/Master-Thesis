@@ -1,0 +1,12 @@
+Data
+data xlsx
+Image and Mask 
+Image_*
+LiverMask_*
+MaskedImage_*
+**/fibrosis.mat
+**/log
+**/_pycache_
+*.csv
+*.xlsx
+*.db

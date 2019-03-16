@@ -1,0 +1,4 @@
+[console_scripts]
+anonymize_pfile = pfile_tools.scripts.anonymize_pfile:main
+dump_pfile_header = pfile_tools.scripts.dump_pfile_header:main
+

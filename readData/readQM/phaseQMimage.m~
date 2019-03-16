@@ -1,0 +1,64 @@
+function [RealQrapImage TIvec TEvec] = readQMraw(par)
+
+
+
+Zero1vol = zeros(size(par.image(:,:,find(par.echo_number==echo & ...
+            par.dynamic_scan_number==1 & ...
+            par.image_type_mr == 0))));
+        
+phaseImage = zeros(size(par.image(:,:,find(par.echo_number==echo & ...
+            par.dynamic_scan_number==1 & ...
+            par.image_type_mr == 0))),par.Max_number_of_echoes);
+
+phase=(par.Max_number_of_dynamics-1):-1:0;
+repp_shift = (par.Max_number_of_slices-par.Max_number_of_dynamics-1)/((par.Max_number_of_dynamics-1)^2);
+time_step = par.TR/par.Max_number_of_slices;       
+        % phas qrapmaster images
+% returns RealQrapImage{echo,dynamic}
+VolIDX = 0;
+for echo=1:par.Max_number_of_echoes  
+    
+    % Create empty image volume for summing all dynamics for each echo
+    sumQrapEcho=Zero1vol;
+        
+        for dynamic=1:par.Max_number_of_dynamics
+        
+            complexIm=par.image(:,:,find(par.echo_number==echo & ...
+                par.dynamic_scan_number==dynamic & ...
+                par.image_type_mr == 0)) .* exp(i *...
+                par.image(:,:,find(par.echo_number==echo & ...
+                par.dynamic_scan_number==dynamic & ...
+                par.image_type_mr == 3)));
+         
+            sumQrapEcho=complexIm+sumQrapEcho;
+        
+        end
+
+
+        phaseImage(:,:,:,echo)=angle(sumQrapEcho);
+        
+        for dynamic=1:par.Max_number_of_dynamics
+        
+            VolIDX = VolIDX + 1;
+        
+        % Calc qrap TI
+        tempTI(dyn)=time_step*(par.Max_number_of_dynamics-phase(end-dyn+1)+ floor(repp_shift*((par.Max_number_of_dynamics-phase(dyn)-1)^2)));
+        % Get phased image for each echo at each phase
+        
+        RealQrapImage(echo,dynamic) = real(par.image(:,:,find(par.echo_number==echo & ...
+            par.dynamic_scan_number==dynamic & ...
+            par.image_type_mr == 0)) .* exp(i *...
+            par.image(:,:,find(par.echo_number==echo & ...
+            par.dynamic_scan_number==dynamic & ...
+            par.image_type_mr == 3))) .*exp(-i * phaseImage{echo}));
+        
+        end
+      
+end
+
+for dyn=1:par.Max_number_of_dynamics
+    tempTI(dyn)=time_step*(par.Max_number_of_dynamics-phase(dyn)+ floor(repp_shift*((par.Max_number_of_dynamics-phase(dyn)-1)^2)));
+end
+
+TI=fliplr(tempTI);
+TE=unique(par.echo_time);

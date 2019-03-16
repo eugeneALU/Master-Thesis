@@ -1,0 +1,301 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Fred Frigo">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (Win95; U) [Netscape]">
+   <title>2D Capon and APES MATLAB examples</title>
+</head>
+<body>
+<font size=+1>2D Capon and APES MATLAB
+examples from JMR:152 57-69 (2001)</font>
+<p>Petre Stoica and Tomas Sundin, "Nonparametric NMR Spectroscopy", Journal
+of Magnetic Resonance", vol 152. pp 57-69, 2001.
+<h3>
+
+<hr>2D Capon
+<hr></h3>
+<tt>% capon_2dtest.m</tt>
+<br><tt>% Fred J. Frigo</tt>
+<br><tt>% Marquette University,&nbsp;&nbsp; Milwaukee, WI&nbsp; USA</tt>
+<br><tt>% Copyright 2002 - All rights reserved.</tt>
+<br><tt>%</tt>
+<br><tt>% May 25, 2002 - implements 2D Capon example by Stoica and Sundin</tt>
+<br><tt>%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Journal of Magnetic Resonance (JMR)&nbsp; #152, Fig 2&nbsp; p62</tt>
+<br><tt>%</tt>
+<br><tt>% See notes from Dr. James A. Heinen&nbsp; 4/25/2002 - 5/16/2002</tt>
+<br><tt>%</tt>
+<br><tt>%</tt><tt></tt>
+<p><tt>function capon_2dtest()</tt><tt></tt>
+<p><tt>clear all;</tt>
+<br><tt>close all;</tt>
+<br><tt></tt>&nbsp;<tt></tt>
+<p><tt>% Get start time</tt>
+<br><tt>ctime = clock;</tt>
+<br><tt>start_time = sprintf('%d:%2.2d:%2.2d',ctime(4), ctime(5),round(ctime(6)))</tt><tt></tt>
+<p><tt>i = sqrt(-1.0);</tt><tt></tt>
+<p><tt>% Parameters given on page JMR: #152&nbsp; p61</tt>
+<br><tt>N= 768;</tt>
+<br><tt>%w1=0.1885;&nbsp;&nbsp; % original value from JMR: 152 p61 - did
+not work for N=768, M=256</tt>
+<br><tt>w1=0.184077;&nbsp; % Alternate value for N=768, M=256</tt>
+<br><tt>alpha1=0.016;</tt>
+<br><tt>a1=1.0;</tt>
+<br><tt>%w2=0.2136;&nbsp;&nbsp; % original value from JMR: 152 p61 - did
+not work for N=768, M=256</tt>
+<br><tt>w2=0.220892;&nbsp; % Alternate value for N=768 and M=256</tt>
+<br><tt>alpha2=0.026;</tt>
+<br><tt>a2=2.5;</tt>
+<br><tt>noise_weight= 0.001;</tt>
+<br><tt>x=[1:N];</tt><tt></tt>
+<p><tt>% Capon filter length</tt>
+<br><tt>M = 256;</tt><tt></tt>
+<p><tt>% Output Length</tt>
+<br><tt>L=N-M;</tt><tt></tt>
+<p><tt>% Ouput plot parameters</tt>
+<br><tt>omega_start = 1;</tt>
+<br><tt>omega_stop = 40;</tt><tt></tt>
+<p><tt>% create input signal and plot</tt>
+<br><tt>for n = 1:N</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; noise(n) = rand(1)*noise_weight + i*rand(1)*noise_weight;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; sig(n)= a1*exp( (-alpha1 + (i*w1))*(n-1) ) +
+...</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a2*exp( (-alpha2 + (i*w2))*(n-1) ) + noise(n);</tt>
+<br><tt>end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>figure(1);</tt>
+<br><tt>plot(x,real(sig), 'b', x, imag(sig), 'r--');</tt>
+<br><tt>title('Simulated Input signal');</tt><tt></tt>
+<p><tt>%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</tt>
+<br><tt>% perform 2D Capon on the simulated signal</tt>
+<br><tt>%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</tt><tt></tt>
+<p><tt>% Form the sample covariance matrix; JMR:152, p60 [22]</tt>
+<br><tt>% See also Intro to Spectral Analysis, Stoica, p199, 1997 (5.4.18)</tt>
+<br><tt>R=zeros(M,M);</tt>
+<br><tt>for index = 1:(L+1)</tt>
+<br><tt>&nbsp;&nbsp; R = R + (sig(index:index+M-1).'*conj(sig(index:index+M-1)));</tt>
+<br><tt>end</tt>
+<br><tt>%R=R/L;&nbsp; % The divide by L is not in JMR: 152</tt><tt></tt>
+<p><tt>% compute the inverse of R</tt>
+<br><tt>IR=inv(R);</tt><tt></tt>
+<p><tt>% Ramp for exponentials used to determine Y(alpha, omega) Stoica
+JMR:152, p59 [8]</tt>
+<br><tt>ramp=linspace(1,L,L);</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>% Set up y(t) defined in JMR:152, p 58 [4]</tt>
+<br><tt>for m=1:M</tt>
+<br><tt>&nbsp;&nbsp; yt(m,:)=sig(m:m+L-1);&nbsp; % Stoica calls this y(t)</tt>
+<br><tt>end</tt><tt></tt>
+<p><tt>% Compute Y(alpha,omega) for different values of alpha</tt>
+<br><tt>P=35;</tt>
+<br><tt>alpha_init = 0.0;</tt>
+<br><tt>alpha_step = 0.001;</tt>
+<br><tt>for p=1:P</tt>
+<br><tt>&nbsp;&nbsp; % compute alpha for this loop</tt>
+<br><tt>&nbsp;&nbsp; alpha = alpha_init + (p-1)*alpha_step;</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; % Compute scale factor: L(alpha) JMR:152 p59 [9]</tt>
+<br><tt>&nbsp;&nbsp; if alpha == 0.0</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % to prevent divide by zero,
+take limit to get L</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Lp = (L*1.0);</tt>
+<br><tt>&nbsp;&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Lp=exp(-2.0*alpha)*((exp(-2.0*alpha*L)
+- 1.0)/(exp(-2.0*alpha)- 1.0));</tt>
+<br><tt>&nbsp;&nbsp; end</tt><tt></tt>
+<p><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; % Compute Y(alpha, omega) given by Stoica JMR:152
+p 59 [8]</tt>
+<br><tt>&nbsp;&nbsp; for L_index=omega_start:omega_stop</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute s(alpha,omega) given by
+Stoica JMR:152 p 60, [24]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L_omega = (2.0*pi)*L_index/(L*1.0);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for m=1:M</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s(m)=exp(
+(-alpha + (i*L_omega))*(m-1) );</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute hcapon given by Stoica
+JMR:152 p 60, [23]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; hcapon=(IR*s.')/(conj(s)*IR*s.');</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % compute exponential for [8]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; myexp = exp( (-alpha +(-i*L_omega))*ramp);</tt><tt></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute Y(alpha,omega) from JMR:152&nbsp;
+p 59 [8]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for m=1:M</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ytexp=yt(m,:).*myexp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yalpha_omega(m)
+= sum(ytexp)/Lp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; capon_results(L_index) = hcapon'*yalpha_omega.';</tt>
+<br><tt>&nbsp;&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp; %Capon Energy Spectrum - Stoica&nbsp; JMR:152 p59
+[10]</tt>
+<br><tt>&nbsp;&nbsp; ces(p,:) = sqrt(abs(capon_results)*Lp);</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>end</tt><tt></tt>
+<p><tt>% Surface and Contour plot</tt>
+<br><tt>figure(2);</tt>
+<br><tt>contour(ces);</tt>
+<br><tt>figure(3);</tt>
+<br><tt>surf(ces);</tt><tt></tt>
+<p><tt>% Get stop time</tt>
+<br><tt>ctime = clock;</tt>
+<br><tt>stop_time = sprintf('%d:%2.2d:%2.2d',ctime(4), ctime(5),round(ctime(6)))</tt>
+<h3>
+
+<hr WIDTH="100%">2D APES
+<hr WIDTH="100%"></h3>
+% apes_2dtest.m
+<br>% Fred J. Frigo
+<br>% Marquette University,&nbsp;&nbsp; Milwaukee, WI&nbsp; USA
+<br>% Copyright 2002 - All rights reserved.
+<br>%
+<br>% May 25, 2002 - implements 2D APES example by Stoica and Sundin
+<br>%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Journal of Magnetic Resonance (JMR)&nbsp; #152, Fig 2&nbsp; p62
+<br>%
+<br>% See notes from Dr. James A. Heinen&nbsp; 4/25/2002 - 5/16/2002
+<br>%
+<p>function apes_2dtest()
+<p>clear all;
+<br>close all;
+<p>% Get start time
+<br>ctime = clock;
+<br>start_time = sprintf('%d:%2.2d:%2.2d',ctime(4), ctime(5),round(ctime(6)))
+<p>i = sqrt(-1.0);
+<p>% Parameters given on page JMR: #152&nbsp; p61
+<br>N= 768;
+<br>%w1=0.1885;&nbsp;&nbsp; % original value from JMR: 152 p61 - did not
+work for N=768, M=256
+<br>w1=0.184077;&nbsp; % Alternate value for N=768, M=256
+<br>alpha1=0.016;
+<br>a1=1.0;
+<br>%w2=0.2136;&nbsp;&nbsp; % original value from JMR: 152 p61 - did not
+work for N=768, M=256
+<br>w2=0.220892;&nbsp; % Alternate value for N=768 and M=256
+<br>alpha2=0.026;
+<br>a2=2.5;
+<br>noise_weight= 0.001;
+<br>x=[1:N];
+<p>% APES filter length
+<br>M = 256;
+<p>% Output Length
+<br>L=N-M;
+<p>% Ouput plot parameters
+<br>omega_start = 1;
+<br>omega_stop = 40;
+<p>% create input signal and plot
+<br>for n = 1:N
+<br>&nbsp;&nbsp;&nbsp; noise(n) = rand(1)*noise_weight + i*rand(1)*noise_weight;
+<br>&nbsp;&nbsp;&nbsp; sig(n)= a1*exp( (-alpha1 + (i*w1))*(n-1) ) + ...
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a2*exp( (-alpha2 + (i*w2))*(n-1) ) + noise(n);
+<br>end
+<br>&nbsp;
+<br>figure(1);
+<br>plot(x,real(sig), 'b', x, imag(sig), 'r--');
+<br>title('Simulated Input signal');
+<p>%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<br>% perform 2D APES on the simulated signal
+<br>%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<p>% Form the sample covariance matrix; JMR:152, p60 [22]
+<br>% See also Intro to Spectral Analysis, Stoica, p199, 1997 (5.4.18)
+<br>R=zeros(M,M);
+<br>for index = 1:(L+1)
+<br>&nbsp;&nbsp; R = R + (sig(index:index+M-1).'*conj(sig(index:index+M-1)));
+<br>end
+<br>%R=R/L;&nbsp; % The divide by L is not in JMR: 152
+<p>% compute the inverse of R
+<br>IR=inv(R);
+<p>% Ramp for exponentials used to determine Y(alpha, omega) Stoica JMR:152,
+p59 [8]
+<br>ramp=linspace(1,L,L);
+<br>&nbsp;
+<br>% Set up y(t) defined in JMR:152, p 58 [4]
+<br>for m=1:M
+<br>&nbsp;&nbsp; yt(m,:)=sig(m:m+L-1);&nbsp; % Stoica calls this y(t)
+<br>end
+<p>% Compute Y(alpha,omega) for different values of alpha
+<br>P=35;
+<br>alpha_init = 0.0;
+<br>alpha_step = 0.001;
+<br>for p=1:P
+<br>&nbsp;&nbsp; % compute alpha for this loop
+<br>&nbsp;&nbsp; alpha = alpha_init + (p-1)*alpha_step;
+<br>&nbsp;
+<br>&nbsp;&nbsp; % Compute scale factor: L(alpha) JMR:152 p59 [9]
+<br>&nbsp;&nbsp; if alpha == 0.0
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % to prevent divide by zero, take
+limit to get L
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Lp = (L*1.0);
+<br>&nbsp;&nbsp; else
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Lp=exp(-2.0*alpha)*((exp(-2.0*alpha*L)
+- 1.0)/(exp(-2.0*alpha)- 1.0));
+<br>&nbsp;&nbsp; end
+<p>&nbsp;
+<br>&nbsp;&nbsp; % Compute Y(alpha, omega) given by Stoica JMR:152 p 59
+[8]
+<br>&nbsp;&nbsp; for L_index=omega_start:omega_stop
+<br>&nbsp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute s(alpha,omega) given by Stoica
+JMR:152 p 60, [24]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L_omega = ((2.0*pi)*L_index)/(L*1.0);
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for m=1:M
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s(m)=exp( (-alpha
++ (i*L_omega))*(m-1) );
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end
+<br>&nbsp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % compute exponential for [8]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; myexp = exp( (-alpha +(-i*L_omega))*ramp);
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute Y(alpha,omega) from JMR:152&nbsp;
+p 59 [8]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for m=1:M
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ytexp=yt(m,:).*myexp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yalpha_omega(m)
+= sum(ytexp)/Lp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end
+<br>&nbsp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute Q as given by Stoica JMR:152&nbsp;
+p60&nbsp; [27]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Q = R + (yalpha_omega.'*conj(yalpha_omega));
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % IQ = inv(Q);
+<br>&nbsp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute inv(Q) using matrix inversion
+lemma&nbsp; JMR:152,&nbsp; p61 [30]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IQ = IR + ((IR*Lp*yalpha_omega.'*conj(yalpha_omega)*IR)/...
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(Lp*conj(yalpha_omega)*IR*yalpha_omega.'));
+<br>&nbsp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Compute hapes given by Stoica JMR:152
+p 61, [29]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; hapes = (IQ*s.')/(conj(s)*IQ*s.');
+<br>&nbsp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % compute APES results by Stoica JMR:152,
+p59&nbsp; [7]
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; apes_results(L_index) = hapes'*yalpha_omega.';
+<br>&nbsp;&nbsp; end
+<br>&nbsp;
+<br>&nbsp;&nbsp; %APES Energy Spectrum - Stoica&nbsp; JMR:152 p59 [10]
+<br>&nbsp;&nbsp; apes_es(p,:) = sqrt(abs(apes_results)*Lp);
+<br>&nbsp;
+<br>end
+<p>% Surface and Contour plot
+<br>figure(2);
+<br>contour(apes_es);
+<br>figure(3);
+<br>surf(apes_es);
+<p>% Get stop time
+<br>ctime = clock;
+<br>stop_time = sprintf('%d:%2.2d:%2.2d',ctime(4), ctime(5),round(ctime(6)))
+<p>
+<hr WIDTH="100%">
+<br>last updated:&nbsp; August 4, 2002
+</body>
+</html>

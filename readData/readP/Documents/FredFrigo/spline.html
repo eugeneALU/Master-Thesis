@@ -1,0 +1,176 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Fred Frigo">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (Win95; U) [Netscape]">
+   <title>MATLAB code for spline smoothing</title>
+</head>
+<body>
+<font size=+1>MATLAB code for spline smoothing</font>
+<br>
+<hr WIDTH="100%"><tt></tt>
+<p><tt>% stest.m - spline smoothing example</tt>
+<br><tt>%</tt>
+<br><tt>% Fred J. Frigo</tt>
+<br><tt>% Dec 13, 2001</tt><tt></tt>
+<p><tt>vsize = 512;</tt>
+<br><tt>w=linspace(0,2*pi, vsize);</tt><tt></tt>
+<p><tt>sig = 2.3*cos(3.0*w) + 1.2*sin(4.5*w) + cos(1.92*w);</tt>
+<br><tt>sig = sig + rand(1,vsize);</tt>
+<br><tt>figure(1);</tt>
+<br><tt>subplot(2,1,1);</tt>
+<br><tt>plot(w, sig);</tt>
+<br><tt>title('Sample input to spline smoothing');</tt><tt></tt>
+<p><tt>smooth_factor = 0.9999;</tt>
+<br><tt>sig_mag = abs(sig);</tt>
+<br><tt>ln_raw = -0.25*log(sig_mag);</tt>
+<br><tt>dy = exp(ln_raw);</tt><tt></tt>
+<p><tt>% Spline smoothing (DeBoor)</tt>
+<br><tt>spline_sig = smooth_spline( sig, dy, vsize, smooth_factor);</tt>
+<br><tt>subplot(2,1,2);</tt>
+<br><tt>plot(w, spline_sig);</tt>
+<br><tt>title('SPLINE SMOOTH smoothed output');</tt>
+<p>
+<hr WIDTH="100%">
+<br><tt>%&nbsp; smooth_spline.m</tt>
+<br><tt>%&nbsp; Spline smoothing&nbsp; (DeBoor's algorithm)</tt>
+<br><tt>%</tt>
+<br><tt>%&nbsp;&nbsp; Fred Frigo</tt>
+<br><tt>%&nbsp;&nbsp; Dec 8, 2001</tt>
+<br><tt>%</tt>
+<br><tt>% Adapted to MATLAB from the following Fortran source file</tt>
+<br><tt>%&nbsp;&nbsp;&nbsp; found at http://www.psc.edu/~burkardt/src/splpak/splpak.f90</tt><tt></tt>
+<p><tt>function spline_sig = smooth_spline( y, dx, npoint, smooth_factor)</tt><tt></tt>
+<p><tt>p=smooth_factor;</tt>
+<br><tt>a=[npoint:4];</tt>
+<br><tt>v=[npoint:7];</tt>
+<br><tt>a= 0.0;</tt>
+<br><tt>v= 0.0;</tt>
+<br><tt></tt>&nbsp;<tt></tt>
+<p><tt>%qty=[npoint:1];</tt>
+<br><tt>%qu=[npoint:1];</tt>
+<br><tt>%u=[npoint:1];</tt><tt></tt>
+<p><tt>x = linspace(0.0, (npoint-1.0)/npoint , npoint);</tt><tt></tt>
+<p><tt>% setupq</tt>
+<br><tt>&nbsp; v(1,4) = x(2)-x(1);</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; for i = 2:npoint-1</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,4) = x(i+1)-x(i);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,1) = dx(i-1)/v(i-1,4);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,2) = ((-1.0.*dx(i))/v(i,4)) - (dx(i)/v(i-1,4));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,3) = dx(i+1)/v(i,4);</tt>
+<br><tt>&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; v(npoint,1) = 0.0;</tt>
+<br><tt>&nbsp; for i = 2:npoint-1</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,5) = (v(i,1)*v(i,1)) + (v(i,2)*v(i,2)) +
+(v(i,3)*v(i,3));</tt>
+<br><tt>&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; for i = 3:npoint-1</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i-1,6) = (v(i-1,2)*v(i,1)) + (v(i-1,3)*v(i,2));</tt>
+<br><tt>&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; v(npoint-1,6) = 0.0;</tt><tt></tt>
+<p><tt>&nbsp; for i = 4: npoint-1</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i-2,7) = v(i-2,3)*v(i,1);</tt>
+<br><tt>&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; v(npoint-2,7) = 0.0;</tt>
+<br><tt>&nbsp; v(npoint-1,7) = 0.0;</tt>
+<br><tt>%!</tt>
+<br><tt>%!&nbsp; Construct&nbsp; q-transp. * y&nbsp; in&nbsp; qty.</tt>
+<br><tt>%!</tt>
+<br><tt>&nbsp; prev = (y(2)-y(1))/v(1,4);</tt>
+<br><tt>&nbsp; for i= 2:npoint-1</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; diff = (y(i+1)-y(i))/v(i,4);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; %qty(i) = diff-prev;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; a(i,4) = diff - prev;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; prev = diff;</tt>
+<br><tt>&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>% end setupq</tt><tt></tt>
+<p><tt>%chol1d</tt><tt></tt>
+<p><tt>%!</tt>
+<br><tt>%!&nbsp; Construct 6*(1-p)*q-transp.*(d**2)*q + p*r</tt>
+<br><tt>%!</tt>
+<br><tt>&nbsp; six1mp = 6.0.*(1.0-p);</tt>
+<br><tt>&nbsp; twop = 2.0.*p;</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; for i = 2: npoint-1</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,1) = (six1mp.*v(i,5)) + (twop.*(v(i-1,4))
++ v(i,4));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,2) = (six1mp.*v(i,6)) +( p.*v(i,4));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(i,3) = six1mp.*v(i,7);</tt>
+<br><tt>&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp; if ( npoint &lt; 4 )</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; u(1) = 0.0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; u(2) = a(2,4)/v(2,1);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; u(3) = 0.0;</tt>
+<br><tt>%!</tt>
+<br><tt>%!&nbsp; Factorization</tt>
+<br><tt>%!</tt>
+<br><tt>&nbsp; else</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for i = 2: npoint-2;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ratio = v(i,2)/v(i,1);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; v(i+1,1) = v(i+1,1)-(ratio.*v(i,2));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; v(i+1,2) = v(i+1,2)-(ratio.*v(i,3));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; v(i,2) = ratio;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ratio = v(i,3)./v(i,1);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; v(i+2,1) = v(i+2,1)-(ratio.*v(i,3));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; v(i,3) = ratio;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; end</tt>
+<br><tt>%!</tt>
+<br><tt>%!&nbsp; Forward substitution</tt>
+<br><tt>%!</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; a(1,3) = 0.0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; v(1,3) = 0.0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; a(2,3) = a(2,4);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; for i = 2: npoint-2</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a(i+1,3) = a(i+1,4) - (v(i,2)*a(i,3))
+- (v(i-1,3)*a(i-1,3));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; end</tt>
+<br><tt>%!</tt>
+<br><tt>%!&nbsp; Back substitution.</tt>
+<br><tt>%!</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; a(npoint,3) = 0.0;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; a(npoint-1,3) = a(npoint-1,3) / v(npoint-1,1);</tt><tt></tt>
+<p><tt>&nbsp;&nbsp;&nbsp; for i = npoint-2:-1:2</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a(i,3) = (a(i,3)/v(i,1)) - (a(i+1,3)*v(i,2))
+- (a(i+2,3)*v(i,3));</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; end</tt><tt></tt>
+<p><tt>&nbsp; end</tt>
+<br><tt>%!</tt>
+<br><tt>%!&nbsp; Construct Q*U.</tt>
+<br><tt>%!</tt>
+<br><tt>&nbsp; prev = 0.0;</tt>
+<br><tt>&nbsp; for i = 2: npoint</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; a(i,1) = (a(i,3)-a(i-1,3))/v(i-1,4);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; a(i-1,1) = a(i,1)-prev;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; prev = a(i,1);</tt>
+<br><tt>&nbsp; end</tt><tt></tt>
+<p><tt>&nbsp; a(npoint,1) = -1.0.*a(npoint,1);</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>%end chol1d</tt><tt></tt>
+<p><tt>&nbsp; for i = 1: npoint</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; spline_sig(i) = y(i)-(6.0.*(1.0-p).*dx(i).*dx(i).*a(i,1));</tt>
+<br><tt>&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>%&nbsp; for i = 1: npoint</tt>
+<br><tt>%&nbsp;&nbsp;&nbsp; a(i,3) = 6.0*a(i,3)*p;</tt>
+<br><tt>%&nbsp; end</tt><tt></tt>
+<p><tt>%&nbsp; for i = 1: npoint-1</tt>
+<br><tt>%&nbsp;&nbsp;&nbsp; a(i,4) = (a(i+1,3)-a(i,3))/v(i,4);</tt>
+<br><tt>%&nbsp;&nbsp;&nbsp; a(i,2) = (a(i+1,1)-a(i,1))/v(i,4)-(a(i,3)+a(i,4)/3.*v(i,4))/2.*v(i,4);</tt>
+<br><tt>%&nbsp; end</tt>
+<br><tt>&nbsp;</tt>
+<br>&nbsp;
+<br>&nbsp;
+<p>
+<hr WIDTH="100%">
+<br>last updated:&nbsp; Dec 13, 2001
+</body>
+</html>

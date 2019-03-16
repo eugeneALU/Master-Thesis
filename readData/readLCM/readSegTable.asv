@@ -1,0 +1,16 @@
+function readSegTable(Table)
+
+
+
+fid = fopen(Table);
+    [A,COUNT] = fscanf(fid,'%c');
+    fclose(fid);
+
+    A = 'Hej kom   och    hjälp     mig för fan '
+    s = sprintf('\n');
+TotalLine = getvalue('kom','och','fan',A,'text');
+
+whiteSpaceIDX = strfind(TotalLine,' '); % find all white space 
+
+NonWhite = find(diff(whiteSpaceIDX)>1);
+

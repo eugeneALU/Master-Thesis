@@ -1,0 +1,16 @@
+MANIFEST.in
+README
+distribute_setup.py
+setup.py
+pfile_tools/__init__.py
+pfile_tools/anonymizer.py
+pfile_tools/headers.py
+pfile_tools/struct_utils.py
+pfile_tools.egg-info/PKG-INFO
+pfile_tools.egg-info/SOURCES.txt
+pfile_tools.egg-info/dependency_links.txt
+pfile_tools.egg-info/entry_points.txt
+pfile_tools.egg-info/top_level.txt
+pfile_tools/scripts/__init__.py
+pfile_tools/scripts/anonymize_pfile.py
+pfile_tools/scripts/dump_pfile_header.py
