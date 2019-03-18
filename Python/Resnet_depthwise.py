@@ -1,12 +1,13 @@
 import torch.nn as nn
+from collections import OrderedDict 
 
-'''
-Resnet that has same architecture as the document.
-    Input: 1 Channel image, (Aribitrary size actually)
-'''
-
-def conv3x3(in_channel, out_channel, stride=1):
-    return nn.Conv2d(in_channel, out_channel, kernel_size=3, stride=stride, padding=1, bias=False)
+def depthwise_conv3x3(in_channel, out_channel, stride=1):
+    return nn.Sequential(OrderedDict([
+            ('depthwise_conv3x3', 
+                nn.Conv2d(in_channel, in_channel, kernel_size=3, stride=stride, padding=1, bias=False, groups=in_channel)),
+            ('pointwise_conv1x1',
+                nn.Conv2d(in_channel, out_channel, kernel_size=1, stride=1, padding=0, bias=False))
+    ]))
 
 def conv1x1(in_channel, out_channel, stride=1):
     return nn.Conv2d(in_channel, out_channel, kernel_size=1, stride=stride, padding=0, bias=False)
@@ -21,11 +22,11 @@ class Bottleneck(nn.Module):
 
         self.conv1 = conv1x1(in_channel, channel)
         self.bn1 = nn.BatchNorm2d(channel)
-        self.conv2 = conv3x3(channel, channel, stride)
+        self.conv2 = depthwise_conv3x3(channel, channel, stride)
         self.bn2 = nn.BatchNorm2d(channel)
         self.conv3 = conv1x1(channel, channel * self.expansion)
         self.bn3 = nn.BatchNorm2d(channel * self.expansion)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
         self.downsample = downsample
 
     def forward(self, x):
@@ -56,7 +57,7 @@ class ResNet(nn.Module):
         self.identity_channel = 64
 
         # input channel is 1 here, since we are gary-scale image
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False) ## Also, change to depthwise?? TODO!!!
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
 
@@ -118,7 +119,7 @@ class ResNet(nn.Module):
 
         return x    
     
-def resnet50_onechannel(**kwargs):
+def resnet50_depthwise(**kwargs):
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     
     return model
@@ -126,9 +127,9 @@ def resnet50_onechannel(**kwargs):
 
 if __name__ == '__main__':
     from torchsummary import summary
-    model = resnet50_onechannel()
+    model = resnet50_depthwise()
 
     print("MODEL:")
-    summary(model, input_size=(1, 384, 384), device="cpu")
+    summary(model, input_size=(3, 384, 384), device="cpu")
     # for module in model.children():
-    #     print(module)
+        # print(module)
