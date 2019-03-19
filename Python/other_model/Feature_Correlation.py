@@ -13,7 +13,7 @@ data = data.drop(['PID', 'STAGE', 'SliceNum', 'AREA', 'NLE', 'RFI_Avg'], axis=1)
 
 
 id = 'BE46'
-data1 = pd.read_excel('../Data/' + id + '_Features.xlsx')
+data1 = pd.read_excel('../../Data/' + id + '_Features.xlsx')
 y = data1['STAGE']
 x = data1.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'RFI_AVG'], axis=1)
 x_labels = x.columns

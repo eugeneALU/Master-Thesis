@@ -10,7 +10,7 @@ del data
 TOTAL = pd.DataFrame()
 for id,index in zip(PID, range(PatientNum)):
     try:
-        data = pd.read_excel('../Data/' + id + '_Features.xlsx')
+        data = pd.read_excel('../../Data/' + id + '_Features.xlsx')
         data['NLE'] = NLE[index]
         TOTAL = TOTAL.append(data)
     except:
@@ -29,7 +29,7 @@ del data
 TOTAL = pd.DataFrame()
 for id,index in zip(PID, range(PatientNum)):
     try:
-        data = pd.read_excel('../Data/' + id + '_Features.xlsx')
+        data = pd.read_excel('../../Data/' + id + '_Features.xlsx')
         data['NLE'] = NLE[index]
         TOTAL = TOTAL.append(data)
     except:

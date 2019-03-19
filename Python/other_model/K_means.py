@@ -16,7 +16,7 @@ data = pd.read_csv('RFI_TOTAL_train.csv')
 label = ['stage0','stage1','stage2','stage3','stage4']
 y = data['STAGE']
 # x = data[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
-x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA'], axis=1)
+x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 
 #####################################
 #######      change label
