@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler,MinMaxScaler
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import KFold
+from sklearn.metrics import confusion_matrix
 
 # read in the data
 data = pd.read_csv('RFI_TOTAL_train.csv')
@@ -17,6 +18,8 @@ x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 
 data_test = pd.read_csv('RFI_TOTAL_test.csv')
 y_test = data_test['STAGE']
+AREA = data_test['AREA']
+PID = data_test[['PID','STAGE','AREA']]
 x_test = data_test.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 # x_test = data_test[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
 
@@ -24,20 +27,20 @@ x_test = data_test.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 #####################################
 #######      change label
 #####################################
-R24 = (y > 1).astype(int) # 46 samples
-R34 = (y > 2).astype(int) # 21 samples
-R4 =  (y > 3).astype(int) # 7 samples
+R24 = (y > 1).astype(int)
+R34 = (y > 2).astype(int)
+R4 =  (y > 3).astype(int)
 
-R24_test = (y_test > 1).astype(int) # 46 samples
-R34_test = (y_test > 2).astype(int) # 21 samples
-R4_test =  (y_test > 3).astype(int) # 7 samples
+R24_test = (y_test > 1).astype(int)
+R34_test = (y_test > 2).astype(int)
+R4_test =  (y_test > 3).astype(int)
 
 x = np.array(x)
 Result = np.array(R34)
 Result_test = np.array(R34_test)
 
 # cross validation
-kf = KFold(n_splits=5,shuffle=True)
+# kf = KFold(n_splits=5,shuffle=True)
 
 # Standardize the feartures
 scaler = StandardScaler()
@@ -59,17 +62,17 @@ x_train = scaler.fit_transform(x)
 x_test= scaler.transform(x_test)
 
 # augment training data    
-Num0 = sum((Result == 0).astype(int))
-Num1 = sum((Result == 1).astype(int))
+# Num0 = sum((Result == 0).astype(int))
+# Num1 = sum((Result == 1).astype(int))
 # get less amount label data
-data1 = x_train[Result == 1]
-label1 = Result[Result == 1]
+# data1 = x_train[Result == 1]
+# label1 = Result[Result == 1]
 # multiply less amount label to have same amount of the label which have more ammount
-Times = int(Num0/Num1) - 1
+# Times = int(Num0/Num1) - 1
 # if Times > 0:
 # 	for i in range(Times):
 # 		x_train = np.concatenate((x_train,data1),axis=0)
-# 		y_train = np.concatenate((y_train,label1),axis=0)
+# 		Result = np.concatenate((Result,label1),axis=0)
 
 ADA= AdaBoostClassifier(n_estimators=55, learning_rate=0.005, algorithm='SAMME.R') 
 ADA.fit(x_train, Result)
@@ -77,6 +80,10 @@ ADA.fit(x_train, Result)
 # predict
 y_pred = ADA.predict(x_test)
 y_prob = ADA.predict_proba(x_test)  # entry 0,1 as probability for 0,1 respectively
+
+# Area filter
+# y_prob = y_prob[AREA>10000]
+# Result_test = Result_test[AREA>10000]
 
 # ROC, AUC
 fpr, tpr, thresholds = roc_curve(Result_test, y_prob[:,1])
@@ -127,16 +134,41 @@ print("Accuracy:  {:8.2f}%".format(Accuracy*100))
 # print(gsearch.best_score_)
 # print("Finish")
 
-def f(n):
-	if n==1 or n==0:
-		result = 0
-	elif n==2:
-		result = 1
-	else:
-		r1 = f(n-1)
-		r2 = f(n-2)
-		result = r1 + r2
-
-	print(result)
-	return result 
-f(4)
+##################################################
+####        Comfusion matrix
+##################################################
+y_prob_test = y_prob
+# y_prob_test = ADA.predict_proba(x_test)
+adjusty = y_prob_test[:,1] >= thresholds[index]
+adjusty = adjusty.astype(int)
+# print(adjusty)
+print('Stage 0~2:', adjusty[Result_test<1].shape)
+print('Stage 3~4:', adjusty[Result_test>0].shape)
+# print('Stage 0~2:', y_pred[Result_test<1].shape)
+# print('Stage 3~4:', y_pred[Result_test>0].shape)
+positive = adjusty[Result_test>0]
+negative = adjusty[Result_test<1]
+PIDp = PID[Result_test>0]
+PIDn = PID[Result_test<1]
+# PIDp[positive<1].to_csv('ErrorList_p.csv', index=False)
+PIDn[negative>0].to_csv('ErrorList_n.csv', index=False)
+cm = confusion_matrix(Result_test, adjusty)
+fig, ax = plt.subplots()
+im = ax.imshow(cm, interpolation='nearest', cmap='Blues')
+ax.figure.colorbar(im, ax=ax)
+classes = ['Stage0~2', 'Stage3~4']
+ax.set(xticks=np.arange(cm.shape[1]),
+	yticks=np.arange(cm.shape[0]),
+	xticklabels=classes, yticklabels=classes,
+	title='Confusion matrix with Stage0~2 VS Stage3~4',
+	ylabel='True label',
+	xlabel='Predicted label')
+fmt = 'd'
+thresh = cm.max() / 2.
+for i in range(cm.shape[0]):
+	for j in range(cm.shape[1]):
+		ax.text(j, i, format(cm[i, j], fmt),
+				ha="center", va="center",
+				color="white" if cm[i, j] > thresh else "black")
+fig.tight_layout()
+plt.show()

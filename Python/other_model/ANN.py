@@ -24,20 +24,20 @@ x_test = data_test.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 #####################################
 #######      change label
 #####################################
-R24 = (y > 1).astype(int) # 46 samples
-R34 = (y > 2).astype(int) # 21 samples
-R4 =  (y > 3).astype(int) # 7 samples
+R24 = (y > 1).astype(int)
+R34 = (y > 2).astype(int)
+R4 =  (y > 3).astype(int)
 
-R24_test = (y_test > 1).astype(int) # 46 samples
-R34_test = (y_test > 2).astype(int) # 21 samples
-R4_test =  (y_test > 3).astype(int) # 7 samples
+R24_test = (y_test > 1).astype(int)
+R34_test = (y_test > 2).astype(int)
+R4_test =  (y_test > 3).astype(int)
 
 x = np.array(x)
 Result = np.array(R34)
 Result_test = np.array(R34_test)
 
 # cross validation
-kf = KFold(n_splits=5,shuffle=True)
+# kf = KFold(n_splits=5,shuffle=True)
 
 # Standardize the feartures
 scaler = StandardScaler()
@@ -62,17 +62,17 @@ x_test= scaler.transform(x_test)
 Num0 = sum((Result == 0).astype(int))
 Num1 = sum((Result == 1).astype(int))
 # get less amount label data
-# data1 = x_train.loc[y_train == 1]
-# label1 = y_train.loc[y_train == 1]
+data1 = x_train[Result == 1]
+label1 = Result[Result == 1]
 # multiply less amount label to have same amount of the label which have more ammount
-# Times = int(Num0/Num1) - 1
-# if Times > 0:
-# 	for i in range(Times):
-# 		x_train = pd.concat([x_train,data1])
-# 		y_train = pd.concat([y_train,label1])  
+Times = int(Num0/Num1) - 1
+if Times > 0:
+	for i in range(Times):
+		x_train = np.concatenate([x_train,data1])
+		Result = np.concatenate([Result,label1])  
 
 MLP = MLPClassifier(solver='adam', alpha=1e-4, hidden_layer_sizes=(25,6), activation='relu',early_stopping=True,
-		max_iter=10000, momentum=0.1,beta_1=0.55,beta_2=0.55,learning_rate='constant',power_t=0.55)
+		max_iter=10000, momentum=0.1,beta_1=0.55,beta_2=0.55,learning_rate='constant',power_t=0.55,tol=1e-6,random_state=1)
 MLP.fit(x_train, Result)                         
 
 # predict
@@ -103,10 +103,14 @@ TN = (y_prob[Result_test==0,1]) < thresholds[index]
 Accuracy = (sum(TP.astype(int)) + sum(TN.astype(int))) / y_test.shape[0]
 print("Threshold:{:8.5f}".format(thresholds[index]))
 
-# ACCU = ACCU + Accuracy
-# TPR = TPR + tpr[index]
-# SPE = SPE + specificity[index]
-# AUC = AUC + roc_auc
+	# ACCU = ACCU + Accuracy
+	# TPR = TPR + tpr[index]
+	# SPE = SPE + specificity[index]
+	# AUC = AUC + roc_auc
+	# print("AUC: {:8.2f}".format(AUC/5))
+	# print("Sensitivity: {:8.2f}%".format(TPR/5))
+	# print("Specificity: {:8.2f}%".format(SPE/5))
+	# print("Accuracy:  {:8.2f}%".format(ACCU/5))
 
 print("AUC: {:8.2f}".format(roc_auc))
 print("Sensitivity: {:8.2f}%".format(tpr[index]*100))

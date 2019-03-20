@@ -71,7 +71,7 @@ class MRIDataset_threechannel(Dataset):
         label = data['label']
 
         # read in as 3 channel image in shape (height, width, channel)
-        image = Image.open(os.path.join(self._path,str(Stage),Image_name)).mode('RGB')
+        image = Image.open(os.path.join(self._path,str(Stage),Image_name)).convert('RGB')
 
         if self.transform:
             # transfroms.ToTensor will change shape into (channel. height, width)

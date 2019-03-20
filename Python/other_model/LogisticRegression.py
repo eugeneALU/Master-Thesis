@@ -15,9 +15,11 @@ from sklearn.model_selection import GridSearchCV
 #         a = 2
 
 # read in the data
-data = pd.read_csv('RFI_TOTAL_train.csv')
+data = pd.read_csv('RFI_TOTAL.csv')
+# data = pd.read_excel('RFIavg_oneslice.xlsx')
+# x = data.drop(['PID', 'STAGE', 'SliceNum', 'AREA'], axis=1)
 y = data['STAGE']
-x = data.drop(['PID', 'STAGE', 'SliceNum', 'AREA'], axis=1)
+# x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 x_select = data[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
 #x = data.drop(['PID', 'STAGE', 'SliceNum', 'AREA', 'NLE'], axis=1)
 
@@ -87,8 +89,9 @@ print("Threshold:{:8.5f}".format(thresholds[index]))
 print("Sensitivity: {:8.2f}%".format(tpr[index]*100))
 print("Specificity: {:8.2f}%".format(specificity[index]*100))
 # Accuracy 
-print("Origin Accuracy(TH = 0.5): %f" % accuracy_score(y_test, y_pred))
+# print("Origin Accuracy(TH = 0.5): %f" % accuracy_score(y_test, y_pred))
 print("Accuracy:  {:8.2f}%".format(Accuracy*100))
+print("Number of Positive sample: ", sum(y_test))
 
 # prob
 # for i in range(y_prob.shape[0]):
