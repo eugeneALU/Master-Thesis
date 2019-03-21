@@ -14,7 +14,7 @@ path_to_label = '../Label_train.csv'
 path_to_testdata = '../Image_test'
 path_to_testlabel = '../Label_test.csv'
 Batch_size = 32
-Batch_size_test = 512
+Batch_size_test = 32
 Epochs = 5
 Transform = transforms.Compose([
     transforms.Resize((384,384)),

@@ -23,6 +23,7 @@ x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 # data = pd.read_excel('RFIavg_oneslice_train.xlsx')
 data = pd.read_csv('RFI_TOTAL_test.csv')
 y_test = data['STAGE']
+PID_test = data['PID']
 # A_test = data['AREA']
 # M_test = A_test.mean()
 x_test = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
@@ -111,15 +112,27 @@ red_patch = mpatches.Patch(color='r', label='TEST')
 ax.legend(handles=[green_patch,red_patch])
 plt.show()
 
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# plt.title('data after PCA (to 3D) AREA select')
-# ax.scatter(pcax3D_test[A<M][:,0],pcax3D_test[A<M][:,1],pcax3D_test[A<M][:,2], c='g')
-# ax.scatter(pcax3D_test[A>=M][:,0],pcax3D_test[A>=M][:,1],pcax3D_test[A>=M][:,2], c='r')
-# green_patch = mpatches.Patch(color='g', label='small liver area')
-# red_patch = mpatches.Patch(color='red', label='big liver area')
-# ax.legend(handles=[green_patch,red_patch])
-# plt.show()
+RH37 = pcax3D_test[PID_test=='RH37']
+OTHERS = pcax3D_test[PID_test!='RH37']
+fig = plt.figure()
+ax = Axes3D(fig)
+plt.title('data after PCA (to 3D) RH37vsOTHERS')
+ax.scatter(RH37[:,0],RH37[:,1],RH37[:,2], c='r')
+ax.scatter(OTHERS[:,0],OTHERS[:,1],OTHERS[:,2], c='g')
+green_patch = mpatches.Patch(color='g', label='OTHERS')
+red_patch = mpatches.Patch(color='r', label='RH37')
+ax.legend(handles=[green_patch,red_patch])
+plt.show()
+
+fig = plt.figure()
+ax = Axes3D(fig)
+plt.title('data after PCA (to 3D) AREA select')
+ax.scatter(pcax3D[A<M][:,0],pcax3D[A<M][:,1],pcax3D[A<M][:,2], c='g')
+ax.scatter(pcax3D[A>=M][:,0],pcax3D[A>=M][:,1],pcax3D[A>=M][:,2], c='r')
+green_patch = mpatches.Patch(color='g', label='small liver area')
+red_patch = mpatches.Patch(color='red', label='big liver area')
+ax.legend(handles=[green_patch,red_patch])
+plt.show()
 
 # patient = ['MLS39','EK46','MM58','SHP43','AE50']
 # blue_patch = mpatches.Patch(color='#0000FF', label=patient[0])
