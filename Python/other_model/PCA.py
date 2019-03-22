@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 # read in the data
 # data = pd.read_excel('Liver_normalize_Local_quantize_one slice per patient.xlsx')
@@ -30,8 +31,12 @@ x_test = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
 # y_test = y_test[A_test>M_test]
 # x_test = x_test[A_test>M_test]
 
-pca = PCA(n_components=2, svd_solver='full')
+# Standardize the feartures
+scaler = StandardScaler()
+x = scaler.fit_transform(x)
+x_test= scaler.transform(x_test)
 
+pca = PCA(n_components=2, svd_solver='full')
 pcax = pca.fit_transform(x)
 # pcax_test = pca.transform(x_test)
 
@@ -67,6 +72,7 @@ pca3D = PCA(n_components=3, svd_solver='full')
 
 pcax3D = pca3D.fit_transform(x)
 pcax3D_test = pca3D.transform(x_test)
+print('Explain variance ratio:', pca3D.explained_variance_ratio_)
 
 fig = plt.figure()
 ax = Axes3D(fig)

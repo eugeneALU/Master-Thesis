@@ -7,12 +7,6 @@ from torchvision import transforms
 from tensorboardX import SummaryWriter
 from torch.nn.functional import binary_cross_entropy
 
-path_to_logs_dir = './log/resnet_oneChannel'
-path_to_data = '../Image_train'
-path_to_label = '../Label_train.csv'
-path_to_testdata = '../Image_test'
-path_to_testlabel = '../Label_test.csv'
-
 ##########################
 ## PARSER
 ##########################
@@ -24,8 +18,14 @@ parser.add_argument("-b", "--batch_size", type=int, choices=[16,32], default=32,
 parser.add_argument("-e", "--epochs", type=int, default=5, help='Specify epochs')
 parser.add_argument("-s", "--size", type=int, choices=[299,384], default=384, help='Specify input image size')
 parser.add_argument("-m", "--mode", choices=['R24','R34','R4'], default='R34', help='Specify classify mode')
+parser.add_argument("-d", "--dataset", choices=['Image','MaskedImage'], default='Image', help='Specify the dataset')
 
 args = parser.parse_args()
+path_to_logs_dir = os.path.join('.','log',args.network)
+path_to_data = os.path.join('..',args.dataset+'_train')
+path_to_testdata = os.path.join('..',args.dataset+'_test')
+path_to_label = '../Label_train.csv'
+path_to_testlabel = '../Label_test.csv'
 Batch_size = args.batch_size
 EPOCHS = args.epochs
 SIZE = args.size
