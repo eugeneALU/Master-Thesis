@@ -130,6 +130,6 @@ if __name__ == '__main__':
     model = resnet50_depthwise()
 
     print("MODEL:")
-    summary(model, input_size=(3, 384, 384), device="cpu")
+    summary(model, input_size=(1, 384, 384), device="cpu")
     # for module in model.children():
         # print(module)

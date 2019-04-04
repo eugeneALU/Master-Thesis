@@ -31,12 +31,17 @@ class inception_v3_pretrain(nn.Module):
         #self.fc2 = nn.Linear(512,1)
 
     def forward(self, x):
-        x, aux_x = self.model(x)
-        #x = self.fc2(x)
-        aux_x = self.sigmoid(aux_x)
-        x = self.sigmoid(x)
-
-        return x, aux_x        
+        if self.model.training and self.model.aux_logits:
+            x, aux_x = self.model(x)
+            aux_x = self.sigmoid(aux_x)
+            #x = self.fc2(x)
+            x = self.sigmoid(x)
+            return x, aux_x 
+        else:
+            x = self.model(x)
+            #x = self.fc2(x)
+            x = self.sigmoid(x)
+            return x    
 
 
 if __name__ == '__main__':

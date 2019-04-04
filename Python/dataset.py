@@ -2,14 +2,16 @@ import os
 import torch
 import pandas as pd
 from PIL import Image
+from PIL import ImageFilter
 from torch.utils.data import Dataset
 from torchvision import transforms
 
 class MRIDataset(Dataset):
-    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor()):
+    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor(), blur=False):
         self._mode = mode
         self._path = path_to_data
         self.transform = transform
+        self.blur = blur
 
         self._label = pd.read_csv(path_to_label)
         self._label['label'] = 0
@@ -35,6 +37,8 @@ class MRIDataset(Dataset):
         label = data['label']
 
         image = Image.open(os.path.join(self._path,str(Stage),Image_name))
+        if self.blur:
+            image = image.filter(ImageFilter.GaussianBlur(radius=2))
 
         if self.transform:
             image = self.transform(image) 
@@ -42,10 +46,11 @@ class MRIDataset(Dataset):
         return label, image
 
 class MRIDataset_threechannel(Dataset):
-    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor()):
+    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor(), blur=False):
         self._mode = mode
         self._path = path_to_data
         self.transform = transform
+        self.blur = blur
 
         self._label = pd.read_csv(path_to_label)
         self._label['label'] = 0
@@ -72,6 +77,8 @@ class MRIDataset_threechannel(Dataset):
 
         # read in as 3 channel image in shape (height, width, channel)
         image = Image.open(os.path.join(self._path,str(Stage),Image_name)).convert('RGB')
+        if self.blur:
+            image = image.filter(ImageFilter.GaussianBlur(radius=2))
 
         if self.transform:
             # transfroms.ToTensor will change shape into (channel. height, width)
