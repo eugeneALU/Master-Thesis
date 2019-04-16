@@ -5,7 +5,7 @@ Image_*
 LiverMask_*
 MaskedImage_*
 **/fibrosis.mat
-**/log
+**/log*
 __pycache__
 *.csv
 *.xlsx

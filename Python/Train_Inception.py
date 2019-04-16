@@ -20,16 +20,16 @@ parser.add_argument("-m", "--mode", choices=['R24','R34','R4'], default='R34', h
 parser.add_argument("-d", "--dataset", choices=['Image','MaskedImage'], default='Image', help='Specify the dataset')
 
 args = parser.parse_args()
-path_to_logs_dir = os.path.join('.','log',args.network+'_'+args.dataset)
+path_to_logs_dir = os.path.join('.','log_valid',args.network+'_'+args.dataset)
 path_to_data = os.path.join('..',args.dataset+'_train')
-path_to_testdata = os.path.join('..',args.dataset+'_test')
+path_to_testdata = os.path.join('..',args.dataset+'_train')
 
 if args.dataset == 'Image':
     path_to_label = '../Label_train.csv'
-    path_to_testlabel = '../Label_test.csv'
+    path_to_testlabel = '../Label_valid.csv'
 else:
     path_to_label = '../MaskedLabel_train.csv'
-    path_to_testlabel = '../MaskedLabel_test.csv' 
+    path_to_testlabel = '../MaskedLabel_valid.csv' 
 
 Batch_size = args.batch_size
 EPOCHS = args.epochs
