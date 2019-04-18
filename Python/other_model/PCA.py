@@ -17,7 +17,7 @@ y = data['STAGE']
 A = data['AREA']
 PID = data['PID']
 M = A.mean()
-x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 # y = y[A>M]
 # x = x[A>M]
 
@@ -27,7 +27,7 @@ y_test = data['STAGE']
 PID_test = data['PID']
 # A_test = data['AREA']
 # M_test = A_test.mean()
-x_test = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+x_test = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 # y_test = y_test[A_test>M_test]
 # x_test = x_test[A_test>M_test]
 

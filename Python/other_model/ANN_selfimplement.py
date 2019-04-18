@@ -85,7 +85,7 @@ class ANN:
 # read in the data
 data = pd.read_csv('RFI_TOTAL_train.csv')
 y = data['STAGE']
-x = data.drop(['PID', 'STAGE', 'SliceNum', 'AREA', 'NLE'], axis=1)
+x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 #x = data[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
 
 

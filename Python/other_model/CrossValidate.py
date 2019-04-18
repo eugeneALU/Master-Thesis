@@ -37,9 +37,9 @@ for train_index, valid_index in kf.split(PID):          #split with PID
         Train = Train[Train['PID'] != PID[index]]
 
     TrainY = Train['STAGE']
-    TrainX = Train.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+    TrainX = Train.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
     ValidY = Valid['STAGE']
-    ValidX = Valid.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+    ValidX = Valid.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 
     #####################################
     #######      change label

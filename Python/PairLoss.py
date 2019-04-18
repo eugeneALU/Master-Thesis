@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ContrastiveLoss(torch.nn.Module):
-    def __init__(self, margin=3.0):
+    def __init__(self, margin=2.0):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
@@ -22,8 +22,8 @@ class CosineLoss(torch.nn.Module):
 
     def forward(self, vector1, vector2, label):
         cosine_distance = F.cosine_similarity(vector1, vector2)
-        loss_contrastive = torch.mean((1-label) * torch.pow(cosine_distance, 2) +
-                                (label) * torch.pow(torch.clamp(self.margin - cosine_distance, min=0.0), 2))
+        loss_contrastive = torch.mean((label) * torch.pow(cosine_distance, 2) +
+                                (1-label) * torch.pow(torch.clamp(self.margin - cosine_distance, min=0.0), 2))
 
 
         return loss_contrastive

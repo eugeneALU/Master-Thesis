@@ -14,12 +14,12 @@ label = ['stage0','stage1','stage2','stage3','stage4']
 data = pd.read_csv('RFI_TOTAL_train.csv')
 y = data['STAGE']
 # x = data[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
-x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 
 data_test = pd.read_csv('RFI_TOTAL_test.csv')
 y_test = data_test['STAGE']
 # x_test = data_test[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
-x_test = data_test.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+x_test = data_test.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 
 #####################################
 #######      change label

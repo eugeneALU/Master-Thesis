@@ -21,9 +21,9 @@ parser.add_argument("-d", "--dataset", choices=['Image', 'MaskedImage'], default
 args = parser.parse_args()
 path_to_logs_dir = os.path.join('.','log_Siamese','Siamese_ContrastiveLossFlip_'+args.dataset+'_'+str(args.size))
 path_to_data = os.path.join('..',args.dataset+'_train')
-path_to_testdata = os.path.join('..',args.dataset+'_test')
+path_to_testdata = os.path.join('..',args.dataset+'_train')
 path_to_label = '../PairLabel_train.csv'
-path_to_testlabel = '../PairLabel_test.csv'
+path_to_testlabel = '../PairLabel_valid.csv'
 
 
 Batch_size = args.batch_size
@@ -62,12 +62,12 @@ if __name__ == '__main__':
 
     weight = 1. / torch.tensor([dataset.negative,dataset.positive], dtype=torch.float)
     target = torch.tensor(dataset._label['LABEL'], dtype=torch.long)
-    sample_weight = torch.tensor([weight[t] for t in target], dtype=torch.float)
+    sample_weight = torch.tensor([weight[t].item() for t in target], dtype=torch.float)
     sampler = WeightedRandomSampler(sample_weight, len(sample_weight))
 
     dataloader = DataLoader(dataset, Batch_size, sampler=sampler, num_workers=1, drop_last=True)
 
-    dataset_test = DATA(path_to_data, path_to_label,transform=Transform, image_suffix=SUFFIX)
+    dataset_test = DATA(path_to_testdata, path_to_testlabel,transform=Transform, image_suffix=SUFFIX)
     dataloader_test = DataLoader(dataset_test, Batch_size, shuffle=True, num_workers=0, drop_last=True)
 
     model = MODEL()
@@ -124,5 +124,6 @@ if __name__ == '__main__':
                 model.train(mode=True)
             step += 1
         epoch += 1
-        torch.save(model.state_dict(), os.path.join(path_to_logs_dir, 'checkpoint.pth'))
+        if epoch % 10 == 0:
+            torch.save(model.state_dict(), os.path.join(path_to_logs_dir, str(epoch)+'_checkpoint.pth'))
     torch.save(model.state_dict(), os.path.join(path_to_logs_dir, 'parameter.pth'))

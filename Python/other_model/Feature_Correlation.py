@@ -9,7 +9,7 @@ PID = data['PID']
 PatientNum = PID.shape[0]
 NLE = data['NLE']
 STAGE = data['STAGE']
-data = data.drop(['PID', 'STAGE', 'SliceNum', 'AREA', 'NLE', 'RFI_Avg'], axis=1)
+data = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 
 
 id = 'BE46'

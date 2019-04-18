@@ -13,14 +13,14 @@ from sklearn.metrics import confusion_matrix
 # read in the data
 data = pd.read_csv('RFI_TOTAL_train.csv')
 y = data['STAGE']
-x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+x = data.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 # x = data[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
 
 data_test = pd.read_csv('RFI_TOTAL_test.csv')
 y_test = data_test['STAGE']
 AREA = data_test['AREA']
 PID = data_test[['PID','STAGE','AREA']]
-x_test = data_test.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE'], axis=1)
+x_test = data_test.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
 # x_test = data_test[['GLRLM_LRLGLE','GLRLM_SRLGLE','GLRLM_LGRE','GLCM_IMC1']]
 
 

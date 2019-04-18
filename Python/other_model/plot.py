@@ -24,7 +24,7 @@ R4 =  (x > 3).astype(int) # 7 samples
 #####################################
 ########        kendall
 #####################################
-y = data.drop(['PID', 'STAGE', 'SliceNum', 'AREA'], axis=1)
+y = data.drop(['PID', 'STAGE', 'SLICE', 'AREA'], axis=1)
 for i in range(y.shape[1]):
     feature = y.iloc[:, i]
     tau, p_value = kendalltau(feature,R4) #x, R34, R24
@@ -33,7 +33,7 @@ for i in range(y.shape[1]):
 #####################################
 #######      RFI
 #####################################
-y = data['RFI_Avg']
+y = data['RFI_AVG']
 # scatter: RFI & STAGE
 plt.figure(1)
 plt.scatter(x,y)

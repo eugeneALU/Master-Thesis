@@ -14,19 +14,20 @@ class Identity(nn.Module):
         return x
 
 class resnet18_pretrain(nn.Module):
-    def __init__(self, num_class=2, freeze=False):
+    def __init__(self, num_class=2, freeze=False, pretrain=True):
         super(resnet18_pretrain, self).__init__()
 
         self.num_class = num_class
-        self.model = models.resnet18(pretrained=True)
-        self.sigmoid = nn.Sigmoid()
+        self.pretrain = pretrain
+        self.model = models.resnet18(pretrained=self.pretrain)
+        # self.sigmoid = nn.Sigmoid()
 
         # freeze the model
         if freeze:
             for param in self.model.parameters():
                 param.requires_grad = False
 
-        in_features = self.model.fc.in_features
+        # in_features = self.model.fc.in_features
         self.model.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         # self.model.fc = nn.Linear(in_features, 1)
         self.model.fc = Identity()
@@ -39,7 +40,7 @@ class resnet18_pretrain(nn.Module):
 
 if __name__ == '__main__':
     from torchsummary import summary
-    model = resnet18_pretrain()
+    model = resnet18_pretrain(pretrain=False)
 
     print("MODEL:")
     summary(model, input_size=(3, 384, 384), device="cpu")
