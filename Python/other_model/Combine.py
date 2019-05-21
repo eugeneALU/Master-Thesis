@@ -36,3 +36,19 @@ for id,index in zip(PID, range(PatientNum)):
         continue
 
 TOTAL.to_csv('RFI_TOTAL_test.csv', index= False)
+
+# read HIFI data
+data = pd.read_excel('HiFi Fibrosis Labels.xlsx')
+PID = data['PID']
+PatientNum = PID.shape[0]
+del data
+
+TOTAL = pd.DataFrame()
+for id,index in zip(PID, range(PatientNum)):
+    try:
+        data = pd.read_excel('../../Data HIFI/' + id + '_Features.xlsx')
+        TOTAL = TOTAL.append(data)
+    except:
+        continue
+
+TOTAL.to_csv('HIFI.csv', index= False)

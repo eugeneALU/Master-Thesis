@@ -1,13 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve, auc
-from sklearn.preprocessing import StandardScaler,MinMaxScaler
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import KFold
-from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GroupKFold,KFold
 
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.svm import SVC
@@ -18,10 +14,13 @@ from sklearn import linear_model
 
 # read in the data
 Data = pd.read_csv('RFI_TOTAL_train.csv')
-PID = Data['PID'].unique()
+PID = Data['PID']
+LABEL = Data['STAGE']
+LABEL = (LABEL> 2).astype(int)
 
 # cross validation
-kf = KFold(n_splits=5,shuffle=True)
+kf = GroupKFold(n_splits=5)
+# kf = KFold(n_splits=5, shuffle=True)
 # Standardize the feartures
 scaler = StandardScaler()
 
@@ -29,12 +28,15 @@ TPR = 0
 SPE = 0
 ACCU = 0
 AUC = 0
-for train_index, valid_index in kf.split(PID):          #split with PID
-    Valid = pd.DataFrame()
-    Train = Data
-    for index in valid_index:
-        Valid = Valid.append(Data[Data['PID'] == PID[index]])
-        Train = Train[Train['PID'] != PID[index]]
+for train_index, valid_index in kf.split(Data, LABEL, PID):          #split with PID
+    # Valid = pd.DataFrame()
+    # Train = Data
+    Valid = Data.loc[valid_index]
+    Train = Data.loc[train_index]
+    # for index in valid_index:
+    #     Valid = Valid.append(Data[Data['PID'] == PID[index]])
+    #     Train = Train[Train['PID'] != PID[index]]
+    print(len(Valid['PID'].unique())+ len(Train['PID'].unique()))
 
     TrainY = Train['STAGE']
     TrainX = Train.drop(['PID', 'STAGE', 'SLICE', 'AREA', 'NLE', 'RFI_AVG'], axis=1)
@@ -76,26 +78,24 @@ for train_index, valid_index in kf.split(PID):          #split with PID
     # 		Result = np.concatenate((Result,label1),axis=0)
 
     # Classifier
-    # clf = AdaBoostClassifier(n_estimators=55, learning_rate=0.005, algorithm='SAMME.R') 
+    # clf = AdaBoostClassifier() #n_estimators=55, learning_rate=0.005, algorithm='SAMME.R'
     # clf.fit(x_train, Result)
 
-    # clf = MLPClassifier(solver='adam', alpha=1e-4, hidden_layer_sizes=(25,6), activation='relu',early_stopping=True,
-	# 	max_iter=10000, momentum=0.1,beta_1=0.55,beta_2=0.55,learning_rate='constant',power_t=0.55,tol=1e-6,random_state=1)
+    # clf = MLPClassifier(solver='adam', activation='relu',early_stopping=True,
+	# 	max_iter=10000,learning_rate='constant',tol=1e-6) #alpha=1e-4, hidden_layer_sizes=(25,6), momentum=0.1,beta_1=0.55,beta_2=0.55,power_t=0.55,random_state=1
     # clf.fit(x_train, Result)   
 
-    # clf = SVC(C=5, kernel='linear',degree=4, gamma=0.001, tol=0.0001, class_weight={0:Weight0, 1:Weight1}, probability=True)
+    # clf = SVC(kernel='linear',tol=0.0001, probability=True)   #C=5, degree=4, gamma=0.001,class_weight={0:Weight0, 1:Weight1},
     # clf.fit(x_train,Result)
 
-    # clf = SVC(kernel='rbf', class_weight={0:Weight0, 1:Weight1}, probability=True)
+    # clf = SVC(kernel='rbf', probability=True)                             #class_weight={0:Weight0, 1:Weight1}, 
     # clf.fit(x_train,Result)
 
-    # clf = RandomForestClassifier(n_estimators=25, min_samples_split=2, max_features='auto',
-    #     min_weight_fraction_leaf=0, criterion='gini', class_weight={0:Weight0, 1:Weight1})
+    # clf = RandomForestClassifier(criterion='gini')  #n_estimators=25, min_samples_split=2, max_features='auto', min_weight_fraction_leaf=0,class_weight={0:Weight0, 1:Weight1}
     # clf.fit(x_train,Result)
 
-    # clf = linear_model.SGDClassifier(loss='log', penalty='elasticnet', alpha=0.0001, l1_ratio=0.1,
-    #     tol=0.001,max_iter=10000)
-    # clf.fit(x_train, Result)
+    clf = linear_model.SGDClassifier(loss='log', tol=0.001, max_iter=10000) #penalty='elasticnet', alpha=0.0001, l1_ratio=0.1, 
+    clf.fit(x_train, Result)
 
     # predict
     y_pred = clf.predict(x_valid)

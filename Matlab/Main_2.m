@@ -1,8 +1,8 @@
 clear;
 close all;
 warning('off','all');
-addpath(genpath('MedicalImageProcessingToolbox'));
-addpath(genpath('ReadData3D'));
+addpath(genpath('../MedicalImageProcessingToolbox'));
+addpath(genpath('../ReadData3D'));
 %% Read in Label data 
 load('fibrosis.mat');   % load in Fibrosis struct
 

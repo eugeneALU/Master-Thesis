@@ -80,20 +80,23 @@ ADA.fit(x_train, Result)
 # predict
 y_pred = ADA.predict(x_test)
 y_prob = ADA.predict_proba(x_test)  # entry 0,1 as probability for 0,1 respectively
+# y_pred = ADA.predict(x_train)
+# y_prob = ADA.predict_proba(x_train) 
 
 # Area filter
 # y_prob = y_prob[AREA>10000]
 # Result_test = Result_test[AREA>10000]
 
 # ROC, AUC
+# fpr, tpr, thresholds = roc_curve(Result, y_prob[:,1])
 fpr, tpr, thresholds = roc_curve(Result_test, y_prob[:,1])
 roc_auc = auc(fpr, tpr)
-# plt.figure(3)
-# plt.plot(fpr, tpr, lw=1, label='ROC (area = {:0.2f})'.format(roc_auc))
-# plt.plot([0, 1], [0, 1], '--', color='r', label='Reference')
-# plt.legend(loc='upper left')
-# plt.title('ROC of RFI(stage 0-2 vs 3-4)')
-# plt.show()
+plt.figure(3)
+plt.plot(fpr, tpr, lw=1, label='ROC (area = {:0.2f})'.format(roc_auc))
+plt.plot([0, 1], [0, 1], '--', color='r', label='Reference')
+plt.legend(loc='upper left')
+plt.title('ROC of RFI(stage 0-2 vs 3-4)')
+plt.show()
 
 # find best threshold
 specificity = 1 - fpr
@@ -104,8 +107,8 @@ for i in range(fpr.shape[0]):
 	if (ADD > highest):
 		highest = ADD
 		index = i
-TP = (y_prob[Result_test==1,1]) >= thresholds[index] 
-TN = (y_prob[Result_test==0,1]) < thresholds[index] 
+TP = (y_prob[Result_test==1,1]) >= thresholds[index]
+TN = (y_prob[Result_test==0,1]) < thresholds[index]
 Accuracy = (sum(TP.astype(int)) + sum(TN.astype(int))) / y_test.shape[0]
 print("Threshold:{:8.5f}".format(thresholds[index]))
 
@@ -115,8 +118,8 @@ print("Threshold:{:8.5f}".format(thresholds[index]))
 # AUC = AUC + roc_auc
 
 print("AUC: {:8.2f}".format(roc_auc))
-print("Sensitivity: {:8.2f}%".format(tpr[index]*100))
-print("Specificity: {:8.2f}%".format(specificity[index]*100))
+print("Sensitivity: {:8.5f}%".format(sum(TP.astype(int))/(y_prob[Result_test==1,1].shape[0])))
+print("Specificity: {:8.5f}%".format(sum(TN.astype(int))/(y_prob[Result_test==0,1].shape[0])))
 print("Accuracy:  {:8.2f}%".format(Accuracy*100))
 
 ##################################################
@@ -129,7 +132,7 @@ print("Accuracy:  {:8.2f}%".format(Accuracy*100))
 # }
 
 # gsearch = GridSearchCV(ADA , param_grid = param_search, scoring='roc_auc', cv=5)
-# gsearch.fit(x_train,y_train)
+# gsearch.fit(x_train, Result)
 # print(gsearch.best_params_)
 # print(gsearch.best_score_)
 # print("Finish")
@@ -150,7 +153,7 @@ positive = adjusty[Result_test>0]
 negative = adjusty[Result_test<1]
 PIDp = PID[Result_test>0]
 PIDn = PID[Result_test<1]
-# PIDp[positive<1].to_csv('ErrorList_p.csv', index=False)
+PIDp[positive<1].to_csv('ErrorList_p.csv', index=False)
 PIDn[negative>0].to_csv('ErrorList_n.csv', index=False)
 cm = confusion_matrix(Result_test, adjusty)
 fig, ax = plt.subplots()

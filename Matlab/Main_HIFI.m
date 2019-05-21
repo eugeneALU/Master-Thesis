@@ -4,16 +4,15 @@ warning('off','all');
 addpath(genpath('../MedicalImageProcessingToolbox'));
 addpath(genpath('../ReadData3D'));
 
-XlsxPath = ['..' filesep 'data xlsx' filesep];
-ImagePath = ['..' filesep 'Image and Mask' filesep 'NILB' filesep];
+ImagePath = ['..' filesep 'Image and Mask' filesep 'HIFI' filesep];
 % output path
-StoreImagePath = ['..' filesep 'Image' filesep];
-StoreMaskedImagePath = ['..' filesep 'MaskedImage' filesep];
-StoreLiverMaskPath = ['..' filesep 'LiverMask' filesep];
-DataPath = ['..' filesep 'Data' filesep];
+StoreImagePath = ['..' filesep 'Image_HIFI' filesep];
+StoreMaskedImagePath = ['..' filesep 'MaskedImage_HIFI' filesep];
+StoreLiverMaskPath = ['..' filesep 'LiverMask_HIFI' filesep];
+DataPath = ['..' filesep 'Data HIFI' filesep];
 AreaThreshold = 2500;   %50*50
 %% Read in Label data 
-load('fibrosis.mat');   % load in Fibrosis struct
+load('HIFIfibrosis.mat');   % load in Fibrosis struct
 %Fibrosis = (Fibrosis(1:2));   %only for test
 SIZE = max(size(Fibrosis));
 
@@ -21,65 +20,42 @@ SIZE = max(size(Fibrosis));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 STAGE = 1;
 SLICE = 2;
-RFI_AVG = 3;
-AREA = 4;
+AREA = 3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-GLRLM_SRE = 5;
-GLRLM_LRE = 6;
-GLRLM_GLN = 7;
-GLRLM_RP = 8;
-GLRLM_RLN = 9;
-GLRLM_LRLGLE = 10;
-GLRLM_LRHGLE = 11;
-GLRLM_SRLGLE = 12;
-GLRLM_SRHGLE = 13;
-GLRLM_HGRE = 14;
-GLRLM_LGRE = 15;
+GLRLM_SRE = 4;
+GLRLM_LRE = 5;
+GLRLM_GLN = 6;
+GLRLM_RP = 7;
+GLRLM_RLN = 8;
+GLRLM_LRLGLE = 9;
+GLRLM_LRHGLE = 10;
+GLRLM_SRLGLE = 11;
+GLRLM_SRHGLE = 12;
+GLRLM_HGRE = 13;
+GLRLM_LGRE = 14;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-GLCM_E = 16;
-GLCM_SUME = 17;
-GLCM_MAXP = 18;
-GLCM_ASM = 19;
-GLCM_COR = 20;
-GLCM_CON = 21;
-GLCM_HOMO = 22;
-GLCM_AUTO = 23;
-GLCM_CSHAD = 24;
-GLCM_CPROM = 25;
-GLCM_DIFE = 26;
-GLCM_DIFAV = 27;
-GLCM_SUMAV = 28;
-GLCM_DIFVAR = 29;
-GLCM_SUMVAR = 30;
-GLCM_IMC1 = 31;
-GLCM_IMC2 = 32;
-GLCM_SOS = 33;
+GLCM_E = 15;
+GLCM_SUME = 16;
+GLCM_MAXP = 17;
+GLCM_ASM = 18;
+GLCM_COR = 19;
+GLCM_CON = 20;
+GLCM_HOMO = 21;
+GLCM_AUTO = 22;
+GLCM_CSHAD = 23;
+GLCM_CPROM = 24;
+GLCM_DIFE = 25;
+GLCM_DIFAV = 26;
+GLCM_SUMAV = 27;
+GLCM_DIFVAR = 28;
+GLCM_SUMVAR = 29;
+GLCM_IMC1 = 30;
+GLCM_IMC2 = 31;
+GLCM_SOS = 32;
 
-for i = 10:SIZE
+for i = 1:SIZE
     pid = Fibrosis(i).PID;
     stage = Fibrosis(i).fibrosis;
-    
-    %% get statistic file
-    % check if file exist
-    if isfile([XlsxPath pid '.xlsx'])
-        Statistic = readtable([XlsxPath pid '.xlsx'], 'ReadRowNames',true, 'Sheet', 'S');
-    else
-        disp(['file ' pid '.xlsx not exist']);
-        return;
-    end
-    
-    %% Calculate NLE (pass to function later)
-    try
-        LiverSI_20min_normalize = Statistic.x20(1:7);
-    catch 
-        LiverSI_20min_normalize = Statistic.x10(1:7);
-    end
-    %SpleenSI_20min_normalize = Statistic.x20(8:10);
-    LiverSI_20min_normalize = mean(LiverSI_20min_normalize);
-    %SpleenSI_20min_normalize = mean(SpleenSI_20min_normalize);
-    NLE = LiverSI_20min_normalize - 1;
-    clear Statistic LiverSI_20min_normalize;
-    
     %% get image file
     if isfile([ImagePath pid filesep pid '.mhd'])
         im = read_mhd([ImagePath pid filesep pid '.mhd']);
@@ -91,17 +67,12 @@ for i = 10:SIZE
     clear im;
     
     %% load mask
-    % try Szesze mask
-    if isfile([ImagePath pid filesep pid '_Liver_SL.vtk'])
-        info = vtk_read_header([ImagePath pid filesep pid '_Liver_SL.vtk']);
-        temp = vtk_read_volume(info);
-        mask = temp > 0.5;
     % try  Ola mask
-    elseif isfile([ImagePath pid filesep pid '_Liver.vtk'])
+    if isfile([ImagePath pid filesep pid '_Liver.vtk'])
         info = vtk_read_header([ImagePath pid filesep pid '_Liver.vtk']);
         info.BitDepth = 32;
         temp = vtk_read_volume(info);
-        mask = (temp/255) > 0.5;
+        mask = temp > 0.5;
     else 
         disp(['NO Live mask file. Something error in ' pid]);
         return;
@@ -110,10 +81,11 @@ for i = 10:SIZE
     
     %% get total slice number
     [~,~,SliceNum] = size(LiverImage);
+    GlobalMAX = max(LiverImage, [], 'all');
     
     %% Table for Append Result
     PID = strings(SliceNum,1);
-    DATA = zeros(SliceNum, 33);
+    DATA = zeros(SliceNum, 32);
     
     %% Loop through each slice who's Liver area is big enough
     COUNT = 0;
@@ -131,8 +103,8 @@ for i = 10:SIZE
             %% Save image and mask
             stage_str = num2str(stage);
             slice_str = num2str(slice);
-            imwrite(mat2gray(Image), [StoreImagePath filesep stage_str filesep pid '_' slice_str '_image.jpg']);
-            imwrite(mat2gray(MaskedImage),[StoreMaskedImagePath filesep stage_str filesep pid '_' slice_str '_maskedimage.jpg']);
+            imwrite(mat2gray(Image,[0,GlobalMAX]), [StoreImagePath filesep stage_str filesep pid '_' slice_str '_image.jpg'],'jpg','Quality',100,'BitDepth',8);
+            imwrite(mat2gray(MaskedImage,[0,GlobalMAX]),[StoreMaskedImagePath filesep stage_str filesep pid '_' slice_str '_maskedimage.jpg'],'jpg','Quality',100,'BitDepth',8);
             imwrite(LiverMask,[StoreLiverMaskPath filesep stage_str filesep pid '_' slice_str '_livermask.jpg']);
             clear stage_str;
             
@@ -140,21 +112,19 @@ for i = 10:SIZE
             disp(['Start computing...' pid ' Slice:' slice_str]);
             clear slice_str;
             
-            [rfi,...
-             GLRLM_sre, GLRLM_lre, GLRLM_gln, GLRLM_rp,...
+            [GLRLM_sre, GLRLM_lre, GLRLM_gln, GLRLM_rp,...
              GLRLM_rln, GLRLM_lrlgle, GLRLM_lrhgle, GLRLM_srlgle, GLRLM_srhgle,...
              GLRLM_hgre, GLRLM_lgre,...
              GLCM_e, GLCM_sume, GLCM_maxp, GLCM_asm,...
              GLCM_cor, GLCM_con, GLCM_homo,...
              GLCM_auto, GLCM_cshad, GLCM_cprom, GLCM_dife,...
              GLCM_difav, GLCM_sumav, GLCM_difvar, GLCM_sumvar,...
-             GLCM_imc1, GLCM_imc2, GLCM_sos] = Version_3(Image, LiverMask, NLE);
+             GLCM_imc1, GLCM_imc2, GLCM_sos] = Version_HIFI(Image, LiverMask);
 
             %% Append Result
            	PID(COUNT) = pid;
             DATA(COUNT,STAGE) = stage;
             DATA(COUNT,SLICE) = slice; 
-            DATA(COUNT,RFI_AVG) = rfi; 
             DATA(COUNT,AREA) = sum(LiverMask(:));
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             DATA(COUNT,GLRLM_SRE) = GLRLM_sre;
@@ -208,7 +178,7 @@ for i = 10:SIZE
     % Split the DATA column for adding the column name
     RESULT = splitvars(RESULT);
     % Set column name
-    RESULT.Properties.VariableNames = {'PID','STAGE','SLICE','RFI_AVG','AREA',...
+    RESULT.Properties.VariableNames = {'PID','STAGE','SLICE','AREA',...
                                        'GLRLM_SRE', 'GLRLM_LRE', 'GLRLM_GLN', 'GLRLM_RP',...
                                        'GLRLM_RLN', 'GLRLM_LRLGLE', 'GLRLM_LRHGLE', 'GLRLM_SRLGLE', 'GLRLM_SRHGLE',...
                                        'GLRLM_HGRE', 'GLRLM_LGRE',...

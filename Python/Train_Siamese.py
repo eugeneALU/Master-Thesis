@@ -14,14 +14,14 @@ parser = ArgumentParser()
 parser.add_argument("-n", "--network", choices=['Resnet_18'], default='Resnet_18', help='Specify the model')
 parser.add_argument("-c", "--channel", type=int, choices=[1,3], default=3, help='Specify the number of input image')
 parser.add_argument("-b", "--batch_size", type=int, choices=[16,32], default=32, help='Specify batch_size')
-parser.add_argument("-e", "--epochs", type=int, default=5, help='Specify epochs')
+parser.add_argument("-e", "--epochs", type=int, default=20, help='Specify epochs')
 parser.add_argument("-s", "--size", type=int, choices=[224,299,384], default=224, help='Specify input image size')
 parser.add_argument("-d", "--dataset", choices=['Image', 'MaskedImage'], default='Image', help='Specify dataset')
 
 args = parser.parse_args()
-path_to_logs_dir = os.path.join('.','log_Siamese','Siamese_ContrastiveLossFlip_'+args.dataset+'_'+str(args.size))
-path_to_data = os.path.join('..',args.dataset+'_train')
-path_to_testdata = os.path.join('..',args.dataset+'_train')
+path_to_logs_dir = os.path.join('.','log_Siamese','NEWDATA+aug_Siamese_ContrastiveLoss_'+args.dataset+'_'+str(args.size))
+path_to_data = os.path.join('..',args.dataset)
+path_to_testdata = os.path.join('..',args.dataset)
 path_to_label = '../PairLabel_train.csv'
 path_to_testlabel = '../PairLabel_valid.csv'
 
@@ -58,7 +58,7 @@ Transform = transforms.Compose([
 
 if __name__ == '__main__':
     writer = SummaryWriter(path_to_logs_dir)
-    dataset = DATA(path_to_data, path_to_label,transform=Transform, image_suffix=SUFFIX)
+    dataset = DATA(path_to_data, path_to_label,transform=Transform, image_suffix=SUFFIX, aug=True)
 
     weight = 1. / torch.tensor([dataset.negative,dataset.positive], dtype=torch.float)
     target = torch.tensor(dataset._label['LABEL'], dtype=torch.long)
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     dataloader = DataLoader(dataset, Batch_size, sampler=sampler, num_workers=1, drop_last=True)
 
-    dataset_test = DATA(path_to_testdata, path_to_testlabel,transform=Transform, image_suffix=SUFFIX)
+    dataset_test = DATA(path_to_testdata, path_to_testlabel,transform=Transform, image_suffix=SUFFIX, aug=True)
     dataloader_test = DataLoader(dataset_test, Batch_size, shuffle=True, num_workers=0, drop_last=True)
 
     model = MODEL()
@@ -127,3 +127,5 @@ if __name__ == '__main__':
         if epoch % 10 == 0:
             torch.save(model.state_dict(), os.path.join(path_to_logs_dir, str(epoch)+'_checkpoint.pth'))
     torch.save(model.state_dict(), os.path.join(path_to_logs_dir, 'parameter.pth'))
+    
+    writer.close() 

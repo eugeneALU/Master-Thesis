@@ -4,6 +4,7 @@ import pandas as pd
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
+from random import randint
 
 class PairDataset(Dataset):
     def __init__(self, path_to_data, path_to_label, transform = transforms.ToTensor(), image_suffix = '_image.jpg'):
@@ -23,8 +24,8 @@ class PairDataset(Dataset):
         data = self._label.iloc[index]
         Image_name1 = data['PID1'] + self.suffix
         Image_name2 = data['PID2'] + self.suffix
-        Stage1 = data['STAGE1'] 
-        Stage2 = data['STAGE2'] 
+        Stage1 =  int(data['STAGE1'])
+        Stage2 =  int(data['STAGE2'])
         label = data['LABEL']
 
         image1 = Image.open(os.path.join(self._path,str(Stage1),Image_name1))
@@ -37,10 +38,11 @@ class PairDataset(Dataset):
         return label, image1, image2
 
 class PairDataset_threechannel(Dataset):
-    def __init__(self, path_to_data, path_to_label, transform = transforms.ToTensor(), image_suffix = '_image.jpg'):
+    def __init__(self, path_to_data, path_to_label, transform = transforms.ToTensor(), image_suffix = '_image.jpg', aug=True):
         self._path = path_to_data
         self.transform = transform
         self.suffix = image_suffix
+        self.aug = aug
 
         self._label = pd.read_csv(path_to_label)
 
@@ -61,6 +63,33 @@ class PairDataset_threechannel(Dataset):
         # read in as 3 channel image in shape (height, width, channel)
         image1 = Image.open(os.path.join(self._path,str(Stage1),Image_name1)).convert('RGB')
         image2 = Image.open(os.path.join(self._path,str(Stage2),Image_name2)).convert('RGB')
+        
+        if self.aug:
+            I = randint(0,8)
+            if I == 1:
+                image1 = image1.transpose(Image.ROTATE_90)
+                image2 = image2.transpose(Image.ROTATE_90)
+            elif I == 2:
+                image1 = image1.transpose(Image.TRANSPOSE)
+                image2 = image2.transpose(Image.TRANSPOSE)
+            elif I == 3:
+                image1 = image1.rotate(45)
+                image2 = image2.rotate(45)
+            elif I == 4:    
+                image1 = image1.rotate(135)
+                image2 = image2.rotate(135)
+            elif I == 5:    
+                image1 = image1.transpose(Image.FLIP_LEFT_RIGHT)
+                image2 = image2.transpose(Image.FLIP_LEFT_RIGHT)
+            elif I == 6:    
+                image1 = image1.transpose(Image.FLIP_TOP_BOTTOM)
+                image2 = image2.transpose(Image.FLIP_TOP_BOTTOM)
+            elif I == 7:    
+                image1 = image1.transpose(Image.ROTATE_180)
+                image2 = image2.transpose(Image.ROTATE_180)
+            elif I == 8:
+                image1 = image1.transpose(Image.ROTATE_270)
+                image2 = image2.transpose(Image.ROTATE_270)
 
         if self.transform:
             # transfroms.ToTensor will change shape into (channel. height, width)

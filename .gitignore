@@ -1,10 +1,11 @@
 Data
+Data HIFI
 data xlsx
 Image and Mask 
-Image_*
-LiverMask_*
-MaskedImage_*
-**/fibrosis.mat
+Image*
+LiverMask*
+MaskedImage*
+**/*.mat
 **/log*
 __pycache__
 *.csv
@@ -14,3 +15,5 @@ __pycache__
 Python/proxy.txt
 .vscode
 *.bat
+Matlab/*.txt
+Result*

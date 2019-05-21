@@ -9,11 +9,11 @@ from torchvision import transforms
 from random import randint
 
 class MRIDataset(Dataset):
-    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor(), blur=False):
+    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor(), aug=False):
         self._mode = mode
         self._path = path_to_data
         self.transform = transform
-        self.blur = blur
+        self.aug = aug
 
         self._label = pd.read_csv(path_to_label)
         self._label['label'] = 0
@@ -40,8 +40,8 @@ class MRIDataset(Dataset):
 
         image = Image.open(os.path.join(self._path,str(Stage),Image_name))
 
-        if self.blur:
-            I = randint(0,7)
+        if self.aug:
+            I = randint(0,15)
             if I == 1:
                 image = image.filter(ImageFilter.GaussianBlur(radius=2))
             elif I == 2:
@@ -51,11 +51,27 @@ class MRIDataset(Dataset):
             elif I == 4:    
                 image = ImageEnhance.Contrast(image).enhance(0.5)
             elif I == 5:    
-                image = ImageEnhance.Brightness(image).enhance(1.5)
+                image = ImageEnhance.Brightness(image).enhance(2)
             elif I == 6:    
                 image = ImageEnhance.Brightness(image).enhance(0.5)
             elif I == 7:    
-                image = ImageEnhance.Sharpness(image).enhance(2)
+                image = ImageEnhance.Sharpness(image).enhance(5)
+            elif I == 8:
+                image = image.transpose(Image.ROTATE_90)
+            elif I == 9:
+                image = image.transpose(Image.TRANSPOSE)
+            elif I == 10:
+                image = image.rotate(45)
+            elif I == 11:
+                image = image.rotate(135)
+            elif I == 12:
+                image = image.transpose(Image.FLIP_LEFT_RIGHT)
+            elif I == 13:
+                image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            elif I == 14:
+                image = image.transpose(Image.ROTATE_180)
+            elif I == 15:
+                image = image.transpose(Image.ROTATE_270)
 
         if self.transform:
             image = self.transform(image) 
@@ -63,11 +79,11 @@ class MRIDataset(Dataset):
         return label, image
 
 class MRIDataset_threechannel(Dataset):
-    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor(), blur=False):
+    def __init__(self, path_to_data, path_to_label, mode = 'R34', transform = transforms.ToTensor(), aug=False):
         self._mode = mode
         self._path = path_to_data
         self.transform = transform
-        self.blur = blur
+        self.aug = aug
 
         self._label = pd.read_csv(path_to_label)
         self._label['label'] = 0
@@ -95,8 +111,8 @@ class MRIDataset_threechannel(Dataset):
         # read in as 3 channel image in shape (height, width, channel)
         image = Image.open(os.path.join(self._path,str(Stage),Image_name)).convert('RGB')
 
-        if self.blur:
-            I = randint(0,7)
+        if self.aug:
+            I = randint(0,15)
             if I == 1:
                 image = image.filter(ImageFilter.GaussianBlur(radius=2))
             elif I == 2:
@@ -106,11 +122,27 @@ class MRIDataset_threechannel(Dataset):
             elif I == 4:    
                 image = ImageEnhance.Contrast(image).enhance(0.5)
             elif I == 5:    
-                image = ImageEnhance.Brightness(image).enhance(1.5)
+                image = ImageEnhance.Brightness(image).enhance(2)
             elif I == 6:    
                 image = ImageEnhance.Brightness(image).enhance(0.5)
             elif I == 7:    
-                image = ImageEnhance.Sharpness(image).enhance(2)
+                image = ImageEnhance.Sharpness(image).enhance(5)
+            elif I == 8:
+                image = image.transpose(Image.ROTATE_90)
+            elif I == 9:
+                image = image.transpose(Image.TRANSPOSE)
+            elif I == 10:
+                image = image.rotate(45)
+            elif I == 11:
+                image = image.rotate(135)
+            elif I == 12:
+                image = image.transpose(Image.FLIP_LEFT_RIGHT)
+            elif I == 13:
+                image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            elif I == 14:
+                image = image.transpose(Image.ROTATE_180)
+            elif I == 15:
+                image = image.transpose(Image.ROTATE_270)
 
         if self.transform:
             # transfroms.ToTensor will change shape into (channel. height, width)
@@ -121,8 +153,8 @@ class MRIDataset_threechannel(Dataset):
 if __name__ == '__main__':
     from torch.utils.data import DataLoader, WeightedRandomSampler
 
-    path_to_data = '../Image_train'
-    path_to_label = '../Label_train.csv'
+    path_to_data = '../Image'
+    path_to_label = '../Label_train_area2500.csv'
     Transform = transforms.Compose([
         transforms.Resize((224,224)),
         transforms.ToTensor()

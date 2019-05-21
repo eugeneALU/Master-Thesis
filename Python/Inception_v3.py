@@ -26,20 +26,20 @@ class inception_v3_pretrain(nn.Module):
 
         in_features = self.model.fc.in_features
         in_features_aux = self.model.AuxLogits.fc.in_features
-        self.model.fc = nn.Linear(in_features, 512)
+        self.model.fc = nn.Linear(in_features, 1)
         self.model.AuxLogits.fc = nn.Linear(in_features_aux, 1)
-        self.fc2 = nn.Linear(512,1)
+        # self.fc2 = nn.Linear(512,1)
 
     def forward(self, x):
         if self.model.training and self.model.aux_logits:
             x, aux_x = self.model(x)
             aux_x = self.sigmoid(aux_x)
-            x = self.fc2(x)
+            # x = self.fc2(x)
             x = self.sigmoid(x)
             return x, aux_x 
         else:
             x = self.model(x)
-            x = self.fc2(x)
+            # x = self.fc2(x)
             x = self.sigmoid(x)
             return x    
 

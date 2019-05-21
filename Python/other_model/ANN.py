@@ -65,21 +65,25 @@ Num1 = sum((Result == 1).astype(int))
 data1 = x_train[Result == 1]
 label1 = Result[Result == 1]
 # multiply less amount label to have same amount of the label which have more ammount
-Times = int(Num0/Num1) - 1
-if Times > 0:
-	for i in range(Times):
-		x_train = np.concatenate([x_train,data1])
-		Result = np.concatenate([Result,label1])  
+# Times = int(Num0/Num1) - 1
+# if Times > 0:
+# 	for i in range(Times):
+# 		x_train = np.concatenate([x_train,data1])
+# 		Result = np.concatenate([Result,label1])  
 
-MLP = MLPClassifier(solver='adam', alpha=1e-4, hidden_layer_sizes=(25,6), activation='relu',early_stopping=True,
-		max_iter=10000, momentum=0.1,beta_1=0.55,beta_2=0.55,learning_rate='constant',power_t=0.55,tol=1e-6,random_state=1)
+MLP = MLPClassifier(solver='adam', alpha=1e-4, hidden_layer_sizes=(25,6), activation='relu',
+		early_stopping=True, max_iter=10000,beta_1=0.55,beta_2=0.55,tol=1e-6) 
+		#power_t=0.55,  momentum=0.1, learning_rate='constant'
 MLP.fit(x_train, Result)                         
 
 # predict
 y_pred = MLP.predict(x_test)
 y_prob = MLP.predict_proba(x_test)  # entry 0,1 as probability for 0,1 respectively
+# y_pred = MLP.predict(x_train)
+# y_prob = MLP.predict_proba(x_train)
 
 # ROC, AUC
+# fpr, tpr, thresholds = roc_curve(Result, y_prob[:,1])
 fpr, tpr, thresholds = roc_curve(Result_test, y_prob[:,1])
 roc_auc = auc(fpr, tpr)
 # plt.figure(3)
@@ -98,7 +102,7 @@ for i in range(fpr.shape[0]):
 	if (ADD > highest):
 		highest = ADD
 		index = i
-TP = (y_prob[Result_test==1,1]) >= thresholds[index] 
+TP = (y_prob[Result_test==1,1]) >= thresholds[index]
 TN = (y_prob[Result_test==0,1]) < thresholds[index] 
 Accuracy = (sum(TP.astype(int)) + sum(TN.astype(int))) / y_test.shape[0]
 print("Threshold:{:8.5f}".format(thresholds[index]))
@@ -112,10 +116,10 @@ print("Threshold:{:8.5f}".format(thresholds[index]))
 	# print("Specificity: {:8.2f}%".format(SPE/5))
 	# print("Accuracy:  {:8.2f}%".format(ACCU/5))
 
-print("AUC: {:8.2f}".format(roc_auc))
-print("Sensitivity: {:8.2f}%".format(tpr[index]*100))
-print("Specificity: {:8.2f}%".format(specificity[index]*100))
-print("Accuracy:  {:8.2f}%".format(Accuracy*100))
+print("AUC: {:8.5f}".format(roc_auc))
+print("Sensitivity: {:8.5f}%".format(sum(TP.astype(int))/(y_prob[Result_test==1,1].shape[0])))
+print("Specificity: {:8.5f}%".format(sum(TN.astype(int))/(y_prob[Result_test==0,1].shape[0])))
+print("Accuracy:  {:8.5f}%".format(Accuracy*100))
 
 ##################################################
 ####        Grid search for best parameters

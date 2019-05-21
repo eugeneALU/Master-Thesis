@@ -68,18 +68,21 @@ Weight1 = Num0/(Num0+Num1)
 # multiply less amount label to have same amount of the label which have more ammount
 # Times = int(Num0/Num1) - 1
 
-print("Training Start")
 #####################################
 #######      Classifier
 #####################################
-clf = SVC(C=5, kernel='linear',degree=4, gamma=0.001, tol=0.0001, class_weight={0:Weight0, 1:Weight1}, probability=True)
+clf = SVC(C=5, kernel='linear', tol=0.0001, probability=True) #class_weight={0:Weight0, 1:Weight1}, gamma=0.001,degree=4
 clf.fit(x_train,Result)
 
 y_pred = clf.predict(x_test)
 y_prob = clf.predict_proba(x_test) #only with probability=True
 y_dist = clf.decision_function(x_test)
+# y_pred = clf.predict(x_train)
+# y_prob = clf.predict_proba(x_train)
+# y_dist = clf.decision_function(x_train)
 
 # ROC, AUC
+# fpr, tpr, thresholds = roc_curve(Result, y_prob[:,1], pos_label=1)
 fpr, tpr, thresholds = roc_curve(Result_test, y_prob[:,1], pos_label=1)
 roc_auc = auc(fpr, tpr)
 # plt.figure(3)
@@ -98,8 +101,8 @@ for i in range(fpr.shape[0]):
 	if (ADD > highest):
 			highest = ADD
 			index = i
-TP = (y_dist[Result_test==1]) >= thresholds[index] 
-TN = (y_dist[Result_test==0]) < thresholds[index] 
+TP = (y_prob[Result_test==1,1]) >= thresholds[index] 
+TN = (y_prob[Result_test==0,1]) < thresholds[index] 
 Accuracy = (sum(TP.astype(int)) + sum(TN.astype(int))) / y_test.shape[0]
 print("Threshold:{:8.5f}".format(thresholds[index]))
 
@@ -109,8 +112,8 @@ print("Threshold:{:8.5f}".format(thresholds[index]))
 # AUC = AUC + roc_auc
 
 print("AUC: {:8.2f}".format(roc_auc))
-print("Sensitivity: {:8.2f}%".format(tpr[index]*100))
-print("Specificity: {:8.2f}%".format(specificity[index]*100))
+print("Sensitivity: {:8.5f}%".format(sum(TP.astype(int))/(y_prob[Result_test==1,1].shape[0])))
+print("Specificity: {:8.5f}%".format(sum(TN.astype(int))/(y_prob[Result_test==0,1].shape[0])))
 print("Accuracy:  {:8.2f}%".format(Accuracy*100))
 
 

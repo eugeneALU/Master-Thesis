@@ -4,8 +4,8 @@
 clear;
 close all;
 warning('off','all');
-addpath(genpath('MedicalImageProcessingToolbox'));
-addpath(genpath('ReadData3D'));
+addpath(genpath('../MedicalImageProcessingToolbox'));
+addpath(genpath('../ReadData3D'));
 
 XlsxPath = ['..' filesep 'data xlsx' filesep];
 ImagePath = ['..' filesep 'Image and Mask' filesep 'NILB' filesep];
