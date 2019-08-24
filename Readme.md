@@ -3,7 +3,7 @@
 # Classifying Liver Fibrosis Stage Using Gadoxetic Acid-Enhanced MR Images
 
 ## This project is my master thesis done at [Linköping University, Sweden](https://liu.se/en).
-## The paper is in collaboration with [CMIV]((https://liu.se/en/research/center-for-medical-image-science-and-visualization-cmiv)) and Linköping University Hospital.
+## The paper is in collaboration with [CMIV](https://liu.se/en/research/center-for-medical-image-science-and-visualization-cmiv) and Linköping University Hospital.
 ## Main coding language used in this thesis:
 ## <font color=#FF4500>&emsp;&emsp;Matlab</font>
 ## <font color=#FF4500>&emsp;&emsp;Python - Pytorch/Sklearn</font>
@@ -41,7 +41,7 @@ addpath(genpath('../ReadData3D'));
 
         #### This is a function that generate a UI for user to examine the data(with or without liver, depend on the user)
 
-        <img src="./Figure/imshow3D.png" width = "281" height = "253" alt="imshow3D" align=center/>
+        <img src="./Figure/imshow3D.PNG" width = "281" height = "253" alt="imshow3D" align=center/>
 
 * Core application files
     * Data checking files
