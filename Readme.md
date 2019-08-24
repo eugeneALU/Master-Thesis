@@ -64,7 +64,7 @@ addpath(genpath('../ReadData3D'));
         * Main_3.m -- Version_3.m
         * Main_HIFI.m -- Version_HIFI.m
 
-        #### Version_2 and Version_3 are the same. The difference between them is which slice is taken into account when extracting the features. In Version_2.m, only one slice (whether set by the user or the slice contains the biggest liver area which is counted by the code) from each patient is taking into account. In Version_3.m, ever slice from each patient is taking into account due to the lack of the data.
+        #### Version_2 and Version_3 are the same. The difference between them is which slice is taken into account when extracting the features. In Version_2.m, only one slice (whether set by the user or the slice contains the biggest liver area which is counted by the code) from each patient is taking into account. In Version_3.m, every slice from each patient is taking into account due to the lack of the data.
         #### Main_HIFI/Version_HIFI are used in HIFI data set which is used to test the model generalizability.
 
     * Helper
